@@ -8,14 +8,30 @@ import { useState } from 'react';
 import AddPropertyDialog from '@/components/properties/AddPropertyDialog';
 import PropertyCSVUpload from '@/components/properties/PropertyCSVUpload';
 import { fetchProperties } from '@/integrations/supabase/helpers';
+import { Property } from '@/data/mockData';
 
 const Properties = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: properties = [], isLoading } = useQuery({
+  const { data: propertiesData = [], isLoading } = useQuery({
     queryKey: ['properties'],
     queryFn: fetchProperties
   });
+
+  // Map Supabase properties to the expected Property type
+  const properties: Property[] = propertiesData.map(prop => ({
+    id: prop.id,
+    name: prop.name,
+    address: prop.address,
+    city: prop.city,
+    state: prop.state,
+    zipCode: prop.zip_code, // Convert snake_case to camelCase
+    bedrooms: 0, // Default values for missing fields
+    bathrooms: 0,
+    image: "/placeholder.svg", // Default image
+    assignedHandymen: [], // Empty array as default
+    // Add any additional fields needed to satisfy the Property type
+  }));
 
   const filteredProperties = properties.filter(property => 
     property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
