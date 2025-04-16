@@ -111,7 +111,7 @@ const PropertyDetail = () => {
                     <p className="text-lg font-semibold">#{property.id.split('-')[1]}</p>
                   </div>
                 </div>
-                <Button className="w-full">Create New Issue</Button>
+                <Button className="w-full">Create AI-Managed Issue</Button>
                 <Button variant="outline" className="w-full">Property Settings</Button>
               </CardContent>
             </Card>

@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { MessageSquare, WhatsApp } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -81,8 +81,8 @@ const IssueWhatsAppButton = ({ issueId, guestPhone, guestName }: IssueWhatsAppBu
         className="flex items-center gap-2"
         onClick={() => setIsDialogOpen(true)}
       >
-        <WhatsApp className="h-4 w-4 text-green-500" />
-        <span>WhatsApp</span>
+        <MessageSquare className="h-4 w-4" />
+        <span>WhatsApp Guest</span>
       </Button>
       
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
