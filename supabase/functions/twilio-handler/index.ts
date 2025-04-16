@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -61,6 +60,26 @@ async function handleInboundMessage(request: any): Promise<WhatsAppMessageRespon
       if (issueError) {
         throw issueError;
       }
+      
+      // Record message in database
+      await fetch(
+        'https://sjxeupeggseedybibyzx.supabase.co/rest/v1/issue_messages',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': Deno.env.get('SUPABASE_ANON_KEY') || '',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY') || ''}`,
+          },
+          body: JSON.stringify({
+            issue_id: issueData.id,
+            message: Body,
+            direction: 'inbound',
+            channel: 'whatsapp',
+            external_id: MessageSid
+          }),
+        }
+      );
       
       // Send confirmation message back to the user
       await sendWhatsAppMessage({

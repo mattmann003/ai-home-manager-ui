@@ -1,4 +1,3 @@
-
 import { useParams, Link } from 'react-router-dom';
 import { 
   AlertCircle, 
@@ -27,6 +26,7 @@ import {
 import IssueDetailTimeline from '@/components/issues/IssueDetailTimeline';
 import IssueDetailAttachments from '@/components/issues/IssueDetailAttachments';
 import IssueCallButton from '@/components/issues/IssueCallButton';
+import IssueWhatsAppButton from '@/components/issues/IssueWhatsAppButton';
 import { issues, properties, handymen, getStatusColorClass, aiCalls, formatDate, formatTime } from '@/data/mockData';
 
 const IssueDetail = () => {
@@ -171,13 +171,22 @@ const IssueDetail = () => {
               <Card className="shadow-sm">
                 <CardHeader className="pb-2 flex flex-row items-center justify-between">
                   <CardTitle className="text-base font-medium">Guest Information</CardTitle>
-                  {issue.guestInfo.phone && (
-                    <IssueCallButton 
-                      issueId={issue.id} 
-                      guestPhone={issue.guestInfo.phone}
-                      guestName={issue.guestInfo.name}
-                    />
-                  )}
+                  <div className="flex items-center gap-2">
+                    {issue.guestInfo.phone && (
+                      <>
+                        <IssueCallButton 
+                          issueId={issue.id} 
+                          guestPhone={issue.guestInfo.phone}
+                          guestName={issue.guestInfo.name}
+                        />
+                        <IssueWhatsAppButton
+                          issueId={issue.id}
+                          guestPhone={issue.guestInfo.phone}
+                          guestName={issue.guestInfo.name}
+                        />
+                      </>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
