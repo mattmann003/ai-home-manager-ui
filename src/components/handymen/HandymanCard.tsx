@@ -1,58 +1,65 @@
 
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tables } from '@/integrations/supabase/types';
+import { Handyman, properties } from '@/data/mockData';
+import { Star, Clock, Briefcase } from 'lucide-react';
 
 type HandymanCardProps = {
-  handyman: Tables<'handymen'>;
+  handyman: Handyman;
 };
 
 const HandymanCard = ({ handyman }: HandymanCardProps) => {
-  const getAvailabilityClass = (availability: string | null) => {
-    switch (availability) {
-      case 'Available':
-        return 'bg-success/10 text-success';
-      case 'Busy':
-        return 'bg-warning/10 text-warning';
-      case 'Off Duty':
-        return 'bg-muted text-muted-foreground';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
-
+  const assignedPropertyCount = handyman.assignedProperties.length;
+  
   return (
     <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-4">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${handyman.name}`} alt={handyman.name} />
-            <AvatarFallback>{handyman.name?.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-medium truncate">{handyman.name}</h3>
-            <p className="text-sm text-muted-foreground truncate">{handyman.email}</p>
-          </div>
-          <div className={`px-2 py-1 rounded-full text-xs ${getAvailabilityClass(handyman.availability)}`}>
-            {handyman.availability}
-          </div>
+      <div className="pt-6 flex justify-center">
+        <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-background">
+          <img
+            src={handyman.image}
+            alt={handyman.name}
+            className="h-full w-full object-cover"
+          />
         </div>
-        
-        <div className="mt-4">
-          <div className="text-sm">
-            <p className="text-muted-foreground mb-1">Specialties:</p>
-            <div className="flex flex-wrap gap-1">
-              {handyman.specialties && handyman.specialties.length > 0 ? (
-                handyman.specialties.map((specialty, idx) => (
-                  <span key={idx} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">
-                    {specialty}
-                  </span>
-                ))
-              ) : (
-                <span className="text-xs text-muted-foreground">None specified</span>
-              )}
+      </div>
+      <CardContent className="p-4 text-center">
+        <div className="space-y-2">
+          <h3 className="font-medium text-lg">{handyman.name}</h3>
+          
+          <div className="text-sm text-muted-foreground">
+            {handyman.specialties.join(' • ')}
+          </div>
+          
+          <div className="flex items-center justify-center gap-1 text-yellow-500">
+            <Star className="h-4 w-4 fill-current" />
+            <span className="font-medium">{handyman.rating}</span>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="flex flex-col items-center p-2 rounded-md bg-muted/50">
+              <Clock className="h-4 w-4 text-muted-foreground mb-1" />
+              <span className="font-medium">{handyman.responseTime} min</span>
+              <span className="text-xs text-muted-foreground">Resp. Time</span>
             </div>
+            <div className="flex flex-col items-center p-2 rounded-md bg-muted/50">
+              <Briefcase className="h-4 w-4 text-muted-foreground mb-1" />
+              <span className="font-medium">{assignedPropertyCount}</span>
+              <span className="text-xs text-muted-foreground">Properties</span>
+            </div>
+          </div>
+          
+          <div className="flex justify-center">
+            <span
+              className={`inline-flex items-center px-3 py-1 rounded-full text-xs ${
+                handyman.availability === 'Available'
+                  ? 'bg-success/10 text-success'
+                  : handyman.availability === 'Busy'
+                  ? 'bg-warning/10 text-warning'
+                  : 'bg-muted text-muted-foreground'
+              }`}
+            >
+              {handyman.availability}
+            </span>
           </div>
         </div>
       </CardContent>
@@ -61,7 +68,7 @@ const HandymanCard = ({ handyman }: HandymanCardProps) => {
           to={`/handymen/${handyman.id}`}
           className="w-full text-center text-sm py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
         >
-          View Details
+          View Profile
         </Link>
       </CardFooter>
     </Card>

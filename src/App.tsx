@@ -1,9 +1,8 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Issues from "./pages/Issues";
 import IssueDetail from "./pages/IssueDetail";
@@ -12,10 +11,8 @@ import PropertyDetail from "./pages/PropertyDetail";
 import Handymen from "./pages/Handymen";
 import HandymanDetail from "./pages/HandymanDetail";
 import Analytics from "./pages/Analytics";
-import KnowledgeBase from "./pages/KnowledgeBase";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import DashboardLayout from "./components/layout/DashboardLayout";
 
 const queryClient = new QueryClient();
 
@@ -26,19 +23,16 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route element={<DashboardLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/issues" element={<Issues />} />
-            <Route path="/issues/:id" element={<IssueDetail />} />
-            <Route path="/properties" element={<Properties />} />
-            <Route path="/properties/:id" element={<PropertyDetail />} />
-            <Route path="/handymen" element={<Handymen />} />
-            <Route path="/handymen/:id" element={<HandymanDetail />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/knowledge" element={<KnowledgeBase />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/issues" element={<Issues />} />
+          <Route path="/issues/:id" element={<IssueDetail />} />
+          <Route path="/properties" element={<Properties />} />
+          <Route path="/properties/:id" element={<PropertyDetail />} />
+          <Route path="/handymen" element={<Handymen />} />
+          <Route path="/handymen/:id" element={<HandymanDetail />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
