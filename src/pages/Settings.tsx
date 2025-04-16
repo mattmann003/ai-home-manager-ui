@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Save, Smartphone, Mail, Bell, UserPlus, UserCog } from 'lucide-react';
+import { Save, Smartphone, Mail, Bell, UserPlus, UserCog, Phone } from 'lucide-react';
+import VapiCallInfo from '@/components/dashboard/VapiCallInfo';
+import WhatsAppSetup from '@/components/communications/WhatsAppSetup';
 
 const Settings = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -25,7 +26,7 @@ const Settings = () => {
         </div>
         
         <Tabs defaultValue="notifications" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="notifications">
               <Bell className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Notifications</span>
@@ -33,6 +34,10 @@ const Settings = () => {
             <TabsTrigger value="permissions">
               <UserCog className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Permissions</span>
+            </TabsTrigger>
+            <TabsTrigger value="communications">
+              <Phone className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Communications</span>
             </TabsTrigger>
           </TabsList>
           
@@ -288,6 +293,75 @@ const Settings = () => {
                 <Button className="ml-auto gap-1">
                   <Save className="h-4 w-4" />
                   <span>Save Changes</span>
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="communications" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <VapiCallInfo />
+              <WhatsAppSetup />
+            </div>
+            
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle>Communication Settings</CardTitle>
+                <CardDescription>Configure how communication channels work with your maintenance system</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium">Automatic Responses</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="auto-create-tickets" defaultChecked />
+                        <Label htmlFor="auto-create-tickets">Auto-create tickets from messages</Label>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="send-confirmations" defaultChecked />
+                        <Label htmlFor="send-confirmations">Send confirmation messages</Label>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="notify-status-changes" defaultChecked />
+                        <Label htmlFor="notify-status-changes">Notify on status changes</Label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium">Message Templates</h3>
+                  <div className="space-y-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="new-issue-template">New Issue Template</Label>
+                      <Input 
+                        id="new-issue-template" 
+                        defaultValue="Thank you for reporting your maintenance issue. We have created ticket #{issue_id} and will address it soon." 
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Available variables: {'{issue_id}'}, {'{property_name}'}, {'{guest_name}'}
+                      </p>
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label htmlFor="status-update-template">Status Update Template</Label>
+                      <Input 
+                        id="status-update-template" 
+                        defaultValue="Your maintenance issue (#{issue_id}) status has been updated to {status}." 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button className="ml-auto gap-1">
+                  <Save className="h-4 w-4" />
+                  <span>Save Settings</span>
                 </Button>
               </CardFooter>
             </Card>
