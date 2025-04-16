@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import IssueDetailTimeline from '@/components/issues/IssueDetailTimeline';
 import IssueDetailAttachments from '@/components/issues/IssueDetailAttachments';
+import IssueCallButton from '@/components/issues/IssueCallButton';
 import { issues, properties, handymen, getStatusColorClass, aiCalls, formatDate, formatTime } from '@/data/mockData';
 
 const IssueDetail = () => {
@@ -168,8 +169,15 @@ const IssueDetail = () => {
           <div className="space-y-6">
             {issue.guestInfo && (
               <Card className="shadow-sm">
-                <CardHeader className="pb-2">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
                   <CardTitle className="text-base font-medium">Guest Information</CardTitle>
+                  {issue.guestInfo.phone && (
+                    <IssueCallButton 
+                      issueId={issue.id} 
+                      guestPhone={issue.guestInfo.phone}
+                      guestName={issue.guestInfo.name}
+                    />
+                  )}
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">

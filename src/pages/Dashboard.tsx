@@ -5,6 +5,7 @@ import StatCard from '@/components/dashboard/StatCard';
 import IssueVolumeChart from '@/components/dashboard/IssueVolumeChart';
 import HandymanResponseTime from '@/components/dashboard/HandymanResponseTime';
 import AiCallLog from '@/components/dashboard/AiCallLog';
+import VapiCallInfo from '@/components/dashboard/VapiCallInfo';
 import { AlertTriangle, Clock, CheckCircle2, Activity, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchAiCalls } from '@/integrations/supabase/helpers';
@@ -170,10 +171,15 @@ const Dashboard = () => {
             description="System uptime"
           />
         </div>
-
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-          <IssueVolumeChart />
-          <HandymanResponseTime />
+        
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+              <IssueVolumeChart />
+              <HandymanResponseTime />
+            </div>
+          </div>
+          <VapiCallInfo />
         </div>
 
         <AiCallLog aiCalls={aiCalls} />

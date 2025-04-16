@@ -1,1 +1,5 @@
+
 project_id = "sjxeupeggseedybibyzx"
+
+[functions.vapi-handler]
+verify_jwt = false
