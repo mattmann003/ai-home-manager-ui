@@ -6,9 +6,9 @@ import IssueVolumeChart from '@/components/dashboard/IssueVolumeChart';
 import HandymanResponseTime from '@/components/dashboard/HandymanResponseTime';
 import AiCallLog from '@/components/dashboard/AiCallLog';
 import VapiCallInfo from '@/components/dashboard/VapiCallInfo';
-import { AlertTriangle, Clock, CheckCircle2, Activity, Loader2 } from 'lucide-react';
+import { AlertTriangle, Clock, CheckCircle2, Activity, Loader2, Building, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { fetchAiCalls } from '@/integrations/supabase/helpers';
+import { fetchAiCalls, fetchHandymen, fetchProperties } from '@/integrations/supabase/helpers';
 import { toast } from '@/components/ui/sonner';
 
 const Dashboard = () => {
@@ -17,7 +17,10 @@ const Dashboard = () => {
     urgentIssues: 0,
     avgResolutionTime: 0,
     resolutionRate: 0,
-    aiResponseRate: 99.9
+    aiResponseRate: 99.9,
+    propertiesCount: 0,
+    handymenCount: 0,
+    avgResponseTime: 0
   });
   const [aiCalls, setAiCalls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,6 +62,17 @@ const Dashboard = () => {
 
         const resolutionRate = totalIssues ? Math.round((resolvedIssues.length / totalIssues) * 100) : 0;
 
+        // Fetch properties count
+        const properties = await fetchProperties();
+        const propertiesCount = properties.length;
+
+        // Fetch handymen count
+        const handymen = await fetchHandymen();
+        const handymenCount = handymen.length;
+
+        // Calculate average response time (in hours)
+        const avgResponseTime = 1.8; // In a real app, you would calculate this from the data
+
         // Calculate average resolution time (simplified)
         const avgResolutionHours = 2.5; // In a real app, you would calculate this from the data
 
@@ -70,7 +84,10 @@ const Dashboard = () => {
           urgentIssues: urgentCount || 0,
           avgResolutionTime: avgResolutionHours,
           resolutionRate,
-          aiResponseRate: 99.9 // This could be calculated from AI call success rate
+          aiResponseRate: 99.9, // This could be calculated from AI call success rate
+          propertiesCount,
+          handymenCount,
+          avgResponseTime
         });
 
         setAiCalls(recentAiCalls);
@@ -142,6 +159,38 @@ const Dashboard = () => {
           <p className="text-muted-foreground">Welcome to AI Maintenance Assistant.</p>
         </div>
 
+        {/* Summary Statistics Section */}
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            title="Open Issues"
+            value={stats.openIssues.toString()}
+            icon={<AlertTriangle className="h-5 w-5" />}
+            description={`${stats.urgentIssues} urgent`}
+            trend={{ value: 8, isPositive: false }}
+            className={stats.openIssues > 10 ? "border-red-200" : ""}
+          />
+          <StatCard
+            title="Avg. Response Time"
+            value={`${stats.avgResponseTime} hrs`}
+            icon={<Clock className="h-5 w-5" />}
+            description="Last 30 days"
+            trend={{ value: 12, isPositive: true }}
+          />
+          <StatCard
+            title="Properties"
+            value={stats.propertiesCount.toString()}
+            icon={<Building className="h-5 w-5" />}
+            description="Under management"
+          />
+          <StatCard
+            title="Active Handymen"
+            value={stats.handymenCount.toString()}
+            icon={<User className="h-5 w-5" />}
+            description="Available for work"
+            trend={{ value: 2, isPositive: true }}
+          />
+        </div>
+        
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Open Issues"

@@ -17,10 +17,13 @@ type StatCardProps = {
 
 const StatCard = ({ title, value, icon, description, trend, className }: StatCardProps) => {
   return (
-    <Card className={cn("shadow-sm", className)}>
+    <Card className={cn(
+      "shadow-sm transition-all duration-200 hover:shadow-md hover:border-primary/20",
+      className
+    )}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <div className="h-8 w-8 text-muted-foreground">{icon}</div>
+        <div className="h-8 w-8 rounded-full flex items-center justify-center bg-primary/10 text-primary">{icon}</div>
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
