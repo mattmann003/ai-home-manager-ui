@@ -27,7 +27,28 @@ const Properties = () => {
     queryFn: fetchProperties,
   });
 
-  const filteredProperties = properties.filter(property => 
+  // Transform database properties to the format expected by PropertyCard
+  const transformedProperties = properties.map(property => ({
+    id: property.id,
+    name: property.name,
+    address: property.address,
+    city: property.city,
+    state: property.state,
+    zipCode: property.zip_code,
+    type: property.type,
+    owner_name: property.owner_name,
+    owner_email: property.owner_email,
+    owner_phone: property.owner_phone,
+    created_at: property.created_at,
+    updated_at: property.updated_at,
+    // Adding missing required properties with default values
+    bedrooms: 0,
+    bathrooms: 0,
+    image: '',
+    assignedHandymen: []
+  }));
+
+  const filteredProperties = transformedProperties.filter(property => 
     property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     property.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
     property.city.toLowerCase().includes(searchQuery.toLowerCase()) ||

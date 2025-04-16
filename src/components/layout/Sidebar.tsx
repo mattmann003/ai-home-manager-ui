@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   BarChart3,
   Building2,
@@ -19,7 +19,7 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export default function Sidebar({ className }: SidebarProps) {
   const { pathname } = useLocation();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
 
   return (
     <div className={cn('pb-12', className)}>
