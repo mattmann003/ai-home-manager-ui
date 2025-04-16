@@ -9,7 +9,241 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      ai_calls: {
+        Row: {
+          duration: number
+          id: string
+          issue_id: string | null
+          resolution: string | null
+          timestamp: string
+          transcript: string
+        }
+        Insert: {
+          duration: number
+          id?: string
+          issue_id?: string | null
+          resolution?: string | null
+          timestamp?: string
+          transcript: string
+        }
+        Update: {
+          duration?: number
+          id?: string
+          issue_id?: string | null
+          resolution?: string | null
+          timestamp?: string
+          transcript?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_calls_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      handymen: {
+        Row: {
+          availability: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          rating: number | null
+          specialties: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          availability?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          rating?: number | null
+          specialties?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          availability?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          rating?: number | null
+          specialties?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      issue_timeline: {
+        Row: {
+          created_by: string | null
+          id: string
+          issue_id: string
+          note: string | null
+          status: string
+          timestamp: string
+        }
+        Insert: {
+          created_by?: string | null
+          id?: string
+          issue_id: string
+          note?: string | null
+          status: string
+          timestamp?: string
+        }
+        Update: {
+          created_by?: string | null
+          id?: string
+          issue_id?: string
+          note?: string | null
+          status?: string
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_timeline_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      issues: {
+        Row: {
+          created_at: string
+          description: string
+          handyman_id: string | null
+          id: string
+          priority: string
+          property_id: string
+          source: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          handyman_id?: string | null
+          id?: string
+          priority?: string
+          property_id: string
+          source?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          handyman_id?: string | null
+          id?: string
+          priority?: string
+          property_id?: string
+          source?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issues_handyman_id_fkey"
+            columns: ["handyman_id"]
+            isOneToOne: false
+            referencedRelation: "handymen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      properties: {
+        Row: {
+          address: string
+          city: string
+          created_at: string
+          id: string
+          name: string
+          owner_email: string | null
+          owner_name: string | null
+          owner_phone: string | null
+          state: string
+          type: string
+          updated_at: string
+          zip_code: string
+        }
+        Insert: {
+          address: string
+          city: string
+          created_at?: string
+          id?: string
+          name: string
+          owner_email?: string | null
+          owner_name?: string | null
+          owner_phone?: string | null
+          state: string
+          type: string
+          updated_at?: string
+          zip_code: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          created_at?: string
+          id?: string
+          name?: string
+          owner_email?: string | null
+          owner_name?: string | null
+          owner_phone?: string | null
+          state?: string
+          type?: string
+          updated_at?: string
+          zip_code?: string
+        }
+        Relationships: []
+      }
+      property_handymen: {
+        Row: {
+          handyman_id: string
+          property_id: string
+        }
+        Insert: {
+          handyman_id: string
+          property_id: string
+        }
+        Update: {
+          handyman_id?: string
+          property_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_handymen_handyman_id_fkey"
+            columns: ["handyman_id"]
+            isOneToOne: false
+            referencedRelation: "handymen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_handymen_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Table, 
@@ -18,21 +18,63 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
-
-import { 
-  issues, 
-  properties, 
-  handymen, 
-  formatDateTime,
-  getStatusColorClass
-} from '@/data/mockData';
+import { ChevronLeft, ChevronRight, Filter, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { fetchProperties, fetchIssues, getStatusColorClass, formatDateTime } from '@/integrations/supabase/helpers';
+import { toast } from '@/components/ui/sonner';
 
 const IssuesTable = () => {
+  const [issues, setIssues] = useState<any[]>([]);
+  const [properties, setProperties] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [propertyFilter, setPropertyFilter] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const [issuesData, propertiesData] = await Promise.all([
+          fetchIssues(),
+          fetchProperties()
+        ]);
+        
+        setIssues(issuesData);
+        setProperties(propertiesData);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        toast.error('Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+
+    // Set up real-time subscription for issues
+    const channel = supabase
+      .channel('issues-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'issues'
+        },
+        async (payload) => {
+          // Refresh the issues data when changes occur
+          const refreshedIssues = await fetchIssues();
+          setIssues(refreshedIssues);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const filteredIssues = issues.filter(issue => {
     // Filter by status if a status filter is selected
@@ -41,7 +83,7 @@ const IssuesTable = () => {
     }
     
     // Filter by property if a property filter is selected
-    if (propertyFilter && issue.propertyId !== propertyFilter) {
+    if (propertyFilter && issue.property_id !== propertyFilter) {
       return false;
     }
     
@@ -61,8 +103,7 @@ const IssuesTable = () => {
 
   const getHandymanName = (handymanId: string | null) => {
     if (!handymanId) return 'Unassigned';
-    const handyman = handymen.find(h => h.id === handymanId);
-    return handyman ? handyman.name : 'Unknown Handyman';
+    return issue.handyman?.name || 'Unknown Handyman';
   };
 
   const handleStatusFilterChange = (value: string) => {
@@ -78,6 +119,15 @@ const IssuesTable = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-lg">Loading issues...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -146,7 +196,7 @@ const IssuesTable = () => {
             {currentIssues.length > 0 ? (
               currentIssues.map((issue) => (
                 <TableRow key={issue.id}>
-                  <TableCell className="font-medium">#{issue.id.split('-')[1]}</TableCell>
+                  <TableCell className="font-medium">#{issue.id.substring(0, 8)}</TableCell>
                   <TableCell>
                     <Link 
                       to={`/issues/${issue.id}`} 
@@ -155,15 +205,15 @@ const IssuesTable = () => {
                       {issue.title}
                     </Link>
                   </TableCell>
-                  <TableCell>{getPropertyName(issue.propertyId)}</TableCell>
+                  <TableCell>{issue.property?.name || getPropertyName(issue.property_id)}</TableCell>
                   <TableCell>
                     <Badge className={getStatusColorClass(issue.status)}>
                       {issue.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{issue.source}</TableCell>
-                  <TableCell className="text-muted-foreground">{formatDateTime(issue.createdAt)}</TableCell>
-                  <TableCell>{getHandymanName(issue.handymanId)}</TableCell>
+                  <TableCell className="text-muted-foreground">{formatDateTime(issue.created_at)}</TableCell>
+                  <TableCell>{getHandymanName(issue.handyman_id)}</TableCell>
                 </TableRow>
               ))
             ) : (
