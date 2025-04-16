@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +12,7 @@ import PropertyDetail from "./pages/PropertyDetail";
 import Handymen from "./pages/Handymen";
 import HandymanDetail from "./pages/HandymanDetail";
 import Analytics from "./pages/Analytics";
+import KnowledgeBase from "./pages/KnowledgeBase";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -31,6 +33,7 @@ const App = () => (
           <Route path="/handymen" element={<Handymen />} />
           <Route path="/handymen/:id" element={<HandymanDetail />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/knowledge" element={<KnowledgeBase />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

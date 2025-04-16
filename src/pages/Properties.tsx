@@ -1,14 +1,31 @@
 
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PropertyCard from '@/components/properties/PropertyCard';
+import AddPropertyDialog from '@/components/properties/AddPropertyDialog';
+import ImportPropertiesDialog from '@/components/properties/ImportPropertiesDialog';
 import { Button } from '@/components/ui/button';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Upload, MoreHorizontal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { properties } from '@/data/mockData';
-import { useState } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { fetchProperties } from '@/integrations/supabase/helpers';
 
 const Properties = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  
+  const { data: properties = [], refetch, isLoading } = useQuery({
+    queryKey: ['properties'],
+    queryFn: fetchProperties,
+  });
 
   const filteredProperties = properties.filter(property => 
     property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -16,6 +33,11 @@ const Properties = () => {
     property.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
     property.state.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleImportComplete = () => {
+    refetch();
+    setImportDialogOpen(false);
+  };
 
   return (
     <DashboardLayout>
@@ -25,10 +47,32 @@ const Properties = () => {
             <h1 className="text-2xl font-bold tracking-tight">Properties</h1>
             <p className="text-muted-foreground">Manage your rental properties.</p>
           </div>
-          <Button className="flex items-center gap-1">
-            <Plus className="h-4 w-4" />
-            <span>Add Property</span>
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              className="flex items-center gap-1"
+              onClick={() => setAddDialogOpen(true)}
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Property</span>
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import CSV
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  Export Data
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         
         <div className="flex-1 overflow-hidden">
@@ -44,18 +88,49 @@ const Properties = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProperties.length > 0 ? (
-            filteredProperties.map(property => (
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="rounded-lg border bg-card text-card-foreground shadow-sm">
+                <div className="aspect-video bg-muted animate-pulse" />
+                <div className="p-4 space-y-2">
+                  <div className="h-5 w-3/4 bg-muted rounded animate-pulse" />
+                  <div className="h-4 w-1/2 bg-muted rounded animate-pulse" />
+                  <div className="h-4 w-2/3 bg-muted rounded animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredProperties.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredProperties.map(property => (
               <PropertyCard key={property.id} property={property} />
-            ))
-          ) : (
-            <div className="col-span-full text-center py-8">
-              <p className="text-muted-foreground">No properties found.</p>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="col-span-full text-center py-8">
+            <p className="text-muted-foreground">No properties found.</p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => setAddDialogOpen(true)}
+            >
+              Add Your First Property
+            </Button>
+          </div>
+        )}
       </div>
+      
+      <AddPropertyDialog 
+        open={addDialogOpen} 
+        onOpenChange={setAddDialogOpen}
+      />
+      
+      <ImportPropertiesDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onImportComplete={handleImportComplete}
+      />
     </DashboardLayout>
   );
 };
