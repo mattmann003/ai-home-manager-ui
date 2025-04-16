@@ -7,6 +7,7 @@ import HandymanResponseTime from '@/components/dashboard/HandymanResponseTime';
 import AiCallLog from '@/components/dashboard/AiCallLog';
 import VapiCallInfo from '@/components/dashboard/VapiCallInfo';
 import RecentIssuesFeed from '@/components/dashboard/RecentIssuesFeed';
+import PerformanceMetricsChart from '@/components/dashboard/PerformanceMetricsChart';
 import { AlertTriangle, Clock, CheckCircle2, Activity, Loader2, Building, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchAiCalls, fetchHandymen, fetchProperties } from '@/integrations/supabase/helpers';
@@ -200,6 +201,12 @@ const Dashboard = () => {
           <VapiCallInfo />
         </div>
         
+        {/* Performance Metrics Chart - New Addition */}
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+          <PerformanceMetricsChart />
+          <IssueVolumeChart />
+        </div>
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Open Issues"
@@ -233,7 +240,6 @@ const Dashboard = () => {
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-              <IssueVolumeChart />
               <HandymanResponseTime />
             </div>
           </div>

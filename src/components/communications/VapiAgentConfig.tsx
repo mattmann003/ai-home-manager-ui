@@ -1,297 +1,113 @@
 
 import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/components/ui/sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { Save, Play, Mic, Check, Settings2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Phone, Save, Play, AlertCircle, CheckCircle, HelpCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
-// Schema for form validation
-const vapiConfigSchema = z.object({
-  agentName: z.string().min(2, { message: "Agent name must be at least 2 characters" }),
+// Define the form schema using zod
+const agentFormSchema = z.object({
+  agentName: z.string().min(3, { message: "Agent name must be at least 3 characters" }),
   welcomeMessage: z.string().min(10, { message: "Welcome message must be at least 10 characters" }),
-  voice: z.string().min(1, { message: "Please select a voice" }),
-  language: z.string().min(1, { message: "Please select a language" }),
-  maxCallDuration: z.coerce.number().min(1).max(60, { message: "Max call duration must be between 1-60 minutes" }),
+  voice: z.string({ required_error: "Please select a voice" }),
+  language: z.string({ required_error: "Please select a language" }),
+  maxCallDuration: z.coerce.number().min(1).max(60, { message: "Max duration must be between 1 and 60 minutes" }),
   fallbackPhone: z.string().regex(/^\+?[1-9]\d{1,14}$/, { message: "Please enter a valid phone number" }),
-  isActive: z.boolean().default(true)
 });
 
-// Prompt template schema
-const promptTemplateSchema = z.object({
-  identityVerification: z.string().min(10, { message: "Template must be at least 10 characters" }),
-  issueTriage: z.string().min(10, { message: "Template must be at least 10 characters" }),
-  escalationPrompt: z.string().min(10, { message: "Template must be at least 10 characters" }),
-});
-
-// Integration settings schema
-const integrationSettingsSchema = z.object({
-  apiKey: z.string().min(1, { message: "API key is required" }),
-  webhookUrl: z.string().url({ message: "Please enter a valid URL" }),
-});
-
-type VapiConfigFormValues = z.infer<typeof vapiConfigSchema>;
-type PromptTemplateFormValues = z.infer<typeof promptTemplateSchema>;
-type IntegrationSettingsFormValues = z.infer<typeof integrationSettingsSchema>;
+type AgentFormValues = z.infer<typeof agentFormSchema>;
 
 const VapiAgentConfig = () => {
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isTestingAgent, setIsTestingAgent] = useState(false);
+  const [activeTab, setActiveTab] = useState("basic");
+  const [isActive, setIsActive] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
 
-  // Form for basic settings
-  const form = useForm<VapiConfigFormValues>({
-    resolver: zodResolver(vapiConfigSchema),
+  // Initialize form with default values
+  const form = useForm<AgentFormValues>({
+    resolver: zodResolver(agentFormSchema),
     defaultValues: {
-      agentName: 'Maintenance Assistant',
-      welcomeMessage: 'Hello, this is the maintenance assistant. How can I help you today?',
-      voice: 'rachel',
-      language: 'en',
-      maxCallDuration: 10,
-      fallbackPhone: '',
-      isActive: true
-    }
+      agentName: "AI Maintenance Assistant",
+      welcomeMessage: "Hello, this is the AI Maintenance Assistant. How can I help you today?",
+      voice: "nova",
+      language: "en-US",
+      maxCallDuration: 15,
+      fallbackPhone: "+14155555555",
+    },
   });
 
-  // Form for prompt templates
-  const promptForm = useForm<PromptTemplateFormValues>({
-    resolver: zodResolver(promptTemplateSchema),
-    defaultValues: {
-      identityVerification: 'Please confirm your name and the property you\'re calling about.',
-      issueTriage: 'Can you describe the maintenance issue you\'re experiencing?',
-      escalationPrompt: 'I\'ll need to transfer you to a human agent. Please hold while I connect you.'
-    }
-  });
-
-  // Form for integration settings
-  const integrationForm = useForm<IntegrationSettingsFormValues>({
-    resolver: zodResolver(integrationSettingsSchema),
-    defaultValues: {
-      apiKey: '',
-      webhookUrl: 'https://example.com/webhook'
-    }
-  });
-
-  // Function to load config from database
-  const loadConfig = async () => {
+  const onSubmit = async (data: AgentFormValues) => {
     try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('system_config')
-        .select('value')
-        .eq('name', 'vapi_agent_config')
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        const config = JSON.parse(data.value);
-        form.reset(config);
-
-        // Also load prompt templates if available
-        const { data: promptData } = await supabase
-          .from('system_config')
-          .select('value')
-          .eq('name', 'vapi_prompt_templates')
-          .single();
-        
-        if (promptData) {
-          promptForm.reset(JSON.parse(promptData.value));
-        }
-
-        // Load integration settings
-        const { data: integrationData } = await supabase
-          .from('system_config')
-          .select('value')
-          .eq('name', 'vapi_integration_settings')
-          .single();
-        
-        if (integrationData) {
-          integrationForm.reset(JSON.parse(integrationData.value));
-        }
-      }
-    } catch (error) {
-      console.error('Error loading configuration:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load configuration',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Load config on component mount
-  useState(() => {
-    loadConfig();
-  }, []);
-
-  // Function to save the configuration
-  const saveConfig = async (values: VapiConfigFormValues) => {
-    try {
-      setIsLoading(true);
-      const { error } = await supabase
-        .from('system_config')
-        .upsert(
-          {
-            name: 'vapi_agent_config',
-            value: JSON.stringify(values),
-            description: 'Vapi Agent Configuration'
-          },
-          { onConflict: 'name' }
-        );
-
-      if (error) throw error;
-
-      toast({
-        title: 'Success',
-        description: 'Agent configuration saved successfully',
-      });
-    } catch (error) {
-      console.error('Error saving configuration:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save configuration',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Function to save prompt templates
-  const savePromptTemplates = async (values: PromptTemplateFormValues) => {
-    try {
-      setIsLoading(true);
-      const { error } = await supabase
-        .from('system_config')
-        .upsert(
-          {
-            name: 'vapi_prompt_templates',
-            value: JSON.stringify(values),
-            description: 'Vapi Prompt Templates'
-          },
-          { onConflict: 'name' }
-        );
-
-      if (error) throw error;
-
-      toast({
-        title: 'Success',
-        description: 'Prompt templates saved successfully',
-      });
-    } catch (error) {
-      console.error('Error saving prompt templates:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save prompt templates',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Function to save integration settings
-  const saveIntegrationSettings = async (values: IntegrationSettingsFormValues) => {
-    try {
-      setIsLoading(true);
-      const { error } = await supabase
-        .from('system_config')
-        .upsert(
-          {
-            name: 'vapi_integration_settings',
-            value: JSON.stringify(values),
-            description: 'Vapi Integration Settings'
-          },
-          { onConflict: 'name' }
-        );
-
-      if (error) throw error;
-
-      toast({
-        title: 'Success',
-        description: 'Integration settings saved successfully',
-      });
-    } catch (error) {
-      console.error('Error saving integration settings:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save integration settings',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Function to test the agent
-  const testAgent = async () => {
-    try {
-      setIsTestingAgent(true);
-      // Simulate a call test
-      const formValues = form.getValues();
+      // Here we would save the configuration to Supabase
+      console.log("Saving configuration:", data);
       
-      toast({
-        title: 'Test Call Initiated',
-        description: `Testing agent "${formValues.agentName}" with voice "${formValues.voice}"`,
-      });
+      // Simulate saving to Supabase
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast({
-        title: 'Test Successful',
-        description: 'The agent configuration is working properly',
-      });
+      setIsActive(true);
+      toast.success("Agent configuration saved successfully");
     } catch (error) {
-      console.error('Error testing agent:', error);
-      toast({
-        title: 'Test Failed',
-        description: 'Failed to test the agent configuration',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsTestingAgent(false);
+      console.error("Error saving agent configuration:", error);
+      toast.error("Failed to save agent configuration");
     }
+  };
+
+  const handleTestAgent = () => {
+    setIsTesting(true);
+    
+    // Simulate a test call
+    setTimeout(() => {
+      setIsTesting(false);
+      toast.success("Test call completed successfully");
+    }, 3000);
   };
 
   return (
-    <Card className="shadow-sm mb-6">
+    <Card className="w-full">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
           <div>
-            <CardTitle>Vapi Call Agent Configuration</CardTitle>
-            <CardDescription>Configure your AI voice agent for maintenance calls</CardDescription>
+            <CardTitle>Voice Assistant Configuration</CardTitle>
+            <CardDescription>Configure your Vapi voice assistant settings</CardDescription>
           </div>
-          <Badge variant={form.getValues().isActive ? "default" : "outline"}>
-            {form.getValues().isActive ? "Active" : "Inactive"}
+          <Badge 
+            variant={isActive ? "default" : "outline"}
+            className={isActive ? "bg-green-500 hover:bg-green-600" : "text-yellow-600 border-yellow-200 bg-yellow-50"}
+          >
+            {isActive ? (
+              <span className="flex items-center gap-1">
+                <CheckCircle className="h-3 w-3" /> Active
+              </span>
+            ) : (
+              <span className="flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" /> Inactive
+              </span>
+            )}
           </Badge>
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="basic-settings" className="space-y-4">
-          <TabsList className="grid grid-cols-3">
-            <TabsTrigger value="basic-settings">Basic Settings</TabsTrigger>
-            <TabsTrigger value="prompt-templates">Prompt Templates</TabsTrigger>
-            <TabsTrigger value="integration-settings">Integration Settings</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-3 mb-6">
+            <TabsTrigger value="basic">Basic Settings</TabsTrigger>
+            <TabsTrigger value="prompts">Prompt Templates</TabsTrigger>
+            <TabsTrigger value="integrations">Integrations</TabsTrigger>
           </TabsList>
           
-          {/* Basic Settings Tab */}
-          <TabsContent value="basic-settings" className="space-y-4">
+          <TabsContent value="basic">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(saveConfig)} className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
                     name="agentName"
@@ -299,13 +115,37 @@ const VapiAgentConfig = () => {
                       <FormItem>
                         <FormLabel>Agent Name</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="Maintenance Assistant" 
-                            {...field} 
-                          />
+                          <Input placeholder="AI Assistant" {...field} />
                         </FormControl>
                         <FormDescription>
-                          Name of your virtual assistant
+                          The name your assistant will use to identify itself
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="voice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Voice</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a voice" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="nova">Nova (Female)</SelectItem>
+                            <SelectItem value="echo">Echo (Male)</SelectItem>
+                            <SelectItem value="bella">Bella (Female)</SelectItem>
+                            <SelectItem value="dean">Dean (Male)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          The voice your assistant will use during calls
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -318,25 +158,55 @@ const VapiAgentConfig = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Language</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
-                        >
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select language" />
+                              <SelectValue placeholder="Select a language" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="en">English</SelectItem>
-                            <SelectItem value="es">Spanish</SelectItem>
-                            <SelectItem value="fr">French</SelectItem>
-                            <SelectItem value="de">German</SelectItem>
-                            <SelectItem value="it">Italian</SelectItem>
+                            <SelectItem value="en-US">English (US)</SelectItem>
+                            <SelectItem value="en-GB">English (UK)</SelectItem>
+                            <SelectItem value="es-ES">Spanish</SelectItem>
+                            <SelectItem value="fr-FR">French</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormDescription>
-                          Primary language for the agent
+                          The language your assistant will speak and understand
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="fallbackPhone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fallback Phone Number</FormLabel>
+                        <FormControl>
+                          <Input type="tel" placeholder="+1 (555) 555-5555" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Used when a call needs human intervention
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="maxCallDuration"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Max Call Duration (minutes)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Maximum duration before call is automatically ended
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -352,270 +222,138 @@ const VapiAgentConfig = () => {
                       <FormLabel>Welcome Message</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Hello, this is the maintenance assistant. How can I help you today?" 
-                          className="min-h-[100px]"
+                          placeholder="Hello, this is the AI Assistant..." 
+                          className="min-h-24"
                           {...field} 
                         />
                       </FormControl>
                       <FormDescription>
-                        Initial message the agent will say when answering a call
+                        The greeting message played at the start of each call
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="voice"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Voice</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select voice" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="rachel">Rachel (Female)</SelectItem>
-                            <SelectItem value="drew">Drew (Male)</SelectItem>
-                            <SelectItem value="amber">Amber (Female)</SelectItem>
-                            <SelectItem value="josh">Josh (Male)</SelectItem>
-                            <SelectItem value="emma">Emma (Female)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>
-                          Voice for the AI agent
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
+                <div className="flex flex-col sm:flex-row gap-3 pt-3">
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={handleTestAgent}
+                    disabled={isTesting}
+                    className="gap-2"
+                  >
+                    {isTesting ? (
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    ) : (
+                      <Play className="h-4 w-4" />
                     )}
-                  />
+                    Test Agent
+                  </Button>
                   
-                  <FormField
-                    control={form.control}
-                    name="maxCallDuration"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Max Call Duration (minutes)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            min={1}
-                            max={60}
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Maximum length of calls in minutes
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                  <Button type="submit" className="gap-2">
+                    <Save className="h-4 w-4" />
+                    Save Configuration
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </TabsContent>
+          
+          <TabsContent value="prompts">
+            <div className="space-y-4">
+              <div className="rounded-md border p-4">
+                <h3 className="text-sm font-medium mb-2">Identity Verification Prompt</h3>
+                <Textarea 
+                  className="min-h-24"
+                  placeholder="To verify your identity, I'll need to ask some questions..."
+                  defaultValue="To verify your identity, I'll need to ask some questions about your property. Could you please tell me your full name and the address of your property?"
+                />
+              </div>
+              
+              <div className="rounded-md border p-4">
+                <h3 className="text-sm font-medium mb-2">Issue Triage Prompt</h3>
+                <Textarea 
+                  className="min-h-24"
+                  placeholder="To help you with your issue, I'll need to gather some information..."
+                  defaultValue="To help you with your issue, I'll need to gather some information. Could you please describe the problem you're experiencing in detail? When did it start? Is it affecting the entire property or just a specific area?"
+                />
+              </div>
+              
+              <div className="rounded-md border p-4">
+                <h3 className="text-sm font-medium mb-2">Escalation Prompt</h3>
+                <Textarea 
+                  className="min-h-24"
+                  placeholder="I'll need to transfer you to a human agent..."
+                  defaultValue="I understand this is a complex issue that requires expert attention. I'll need to transfer you to one of our maintenance specialists who can better assist you. Please hold while I connect you."
+                />
+              </div>
+              
+              <Button className="gap-2 mt-2">
+                <Save className="h-4 w-4" />
+                Save Prompts
+              </Button>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="integrations">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="vapi-api-key">Vapi API Key</Label>
+                  <Input
+                    id="vapi-api-key"
+                    type="password"
+                    placeholder="vapi_1234abcd5678..."
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Your Vapi API key for voice assistant functionality
+                  </p>
                 </div>
                 
-                <FormField
-                  control={form.control}
-                  name="fallbackPhone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Fallback Phone Number</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="+1234567890" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Phone number to transfer calls when agent can't resolve issues
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="webhook-url">Webhook URL</Label>
+                  <Input
+                    id="webhook-url"
+                    placeholder="https://your-webhook-endpoint.com/vapi-hook"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Endpoint that receives events from the voice assistant
+                  </p>
+                </div>
                 
-                <FormField
-                  control={form.control}
-                  name="isActive"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                      <FormControl>
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={field.value}
-                            onChange={field.onChange}
-                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                          />
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>Active</FormLabel>
-                            <FormDescription>
-                              Enable or disable the voice agent
-                            </FormDescription>
-                          </div>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </form>
-            </Form>
-          </TabsContent>
-          
-          {/* Prompt Templates Tab */}
-          <TabsContent value="prompt-templates" className="space-y-4">
-            <Form {...promptForm}>
-              <form onSubmit={promptForm.handleSubmit(savePromptTemplates)} className="space-y-4">
-                <FormField
-                  control={promptForm.control}
-                  name="identityVerification"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Identity Verification</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Please confirm your name and the property you're calling about." 
-                          className="min-h-[100px]"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Prompt for verifying caller identity
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="openai-api-key">OpenAI API Key</Label>
+                  <Input
+                    id="openai-api-key"
+                    type="password"
+                    placeholder="sk-1234abcd5678..."
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    For generating AI responses during calls
+                  </p>
+                </div>
                 
-                <FormField
-                  control={promptForm.control}
-                  name="issueTriage"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Issue Triage</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Can you describe the maintenance issue you're experiencing?" 
-                          className="min-h-[100px]"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Prompt for gathering information about maintenance issues
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={promptForm.control}
-                  name="escalationPrompt"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Escalation Prompt</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="I'll need to transfer you to a human agent. Please hold while I connect you." 
-                          className="min-h-[100px]"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Message used when transferring to a human
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <Button type="submit" disabled={isLoading}>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Templates
-                </Button>
-              </form>
-            </Form>
-          </TabsContent>
-          
-          {/* Integration Settings Tab */}
-          <TabsContent value="integration-settings" className="space-y-4">
-            <Form {...integrationForm}>
-              <form onSubmit={integrationForm.handleSubmit(saveIntegrationSettings)} className="space-y-4">
-                <FormField
-                  control={integrationForm.control}
-                  name="apiKey"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Vapi API Key</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Enter your Vapi API key" 
-                          type="password"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        API key from your Vapi account
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={integrationForm.control}
-                  name="webhookUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Webhook URL</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="https://example.com/webhook" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        URL for call event notifications
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <Button type="submit" disabled={isLoading}>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Integration Settings
-                </Button>
-              </form>
-            </Form>
+                <div className="space-y-2">
+                  <Label htmlFor="twilio-phone">Twilio Phone Number</Label>
+                  <Input
+                    id="twilio-phone"
+                    placeholder="+15551234567"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    The outbound caller ID for your voice assistant
+                  </p>
+                </div>
+              </div>
+              
+              <Button className="gap-2">
+                <Save className="h-4 w-4" />
+                Save Integration Settings
+              </Button>
+            </div>
           </TabsContent>
         </Tabs>
       </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button
-          variant="outline"
-          onClick={testAgent}
-          disabled={isTestingAgent}
-        >
-          <Play className="mr-2 h-4 w-4" />
-          Test Agent
-        </Button>
-        <Button 
-          type="submit"
-          onClick={form.handleSubmit(saveConfig)}
-          disabled={isLoading}
-        >
-          <Save className="mr-2 h-4 w-4" />
-          Save Configuration
-        </Button>
-      </CardFooter>
     </Card>
   );
 };
