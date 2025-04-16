@@ -15,6 +15,7 @@ import Analytics from "./pages/Analytics";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import DashboardLayout from "./components/layout/DashboardLayout";
 
 const queryClient = new QueryClient();
 
@@ -25,17 +26,19 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/issues" element={<Issues />} />
-          <Route path="/issues/:id" element={<IssueDetail />} />
-          <Route path="/properties" element={<Properties />} />
-          <Route path="/properties/:id" element={<PropertyDetail />} />
-          <Route path="/handymen" element={<Handymen />} />
-          <Route path="/handymen/:id" element={<HandymanDetail />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/knowledge" element={<KnowledgeBase />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<NotFound />} />
+          <Route element={<DashboardLayout />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/issues" element={<Issues />} />
+            <Route path="/issues/:id" element={<IssueDetail />} />
+            <Route path="/properties" element={<Properties />} />
+            <Route path="/properties/:id" element={<PropertyDetail />} />
+            <Route path="/handymen" element={<Handymen />} />
+            <Route path="/handymen/:id" element={<HandymanDetail />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/knowledge" element={<KnowledgeBase />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
