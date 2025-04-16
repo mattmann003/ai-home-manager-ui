@@ -1,14 +1,21 @@
 
+import { useQuery } from '@tanstack/react-query';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PropertyCard from '@/components/properties/PropertyCard';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { properties } from '@/data/mockData';
 import { useState } from 'react';
 import AddPropertyDialog from '@/components/properties/AddPropertyDialog';
+import PropertyCSVUpload from '@/components/properties/PropertyCSVUpload';
+import { fetchProperties } from '@/integrations/supabase/helpers';
 
 const Properties = () => {
   const [searchQuery, setSearchQuery] = useState('');
+
+  const { data: properties = [], isLoading } = useQuery({
+    queryKey: ['properties'],
+    queryFn: fetchProperties
+  });
 
   const filteredProperties = properties.filter(property => 
     property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -25,7 +32,10 @@ const Properties = () => {
             <h1 className="text-2xl font-bold tracking-tight">Properties</h1>
             <p className="text-muted-foreground">Manage your rental properties.</p>
           </div>
-          <AddPropertyDialog />
+          <div className="flex gap-2">
+            <PropertyCSVUpload />
+            <AddPropertyDialog />
+          </div>
         </div>
         
         <div className="flex-1 overflow-hidden">
@@ -41,17 +51,25 @@ const Properties = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProperties.length > 0 ? (
-            filteredProperties.map(property => (
-              <PropertyCard key={property.id} property={property} />
-            ))
-          ) : (
-            <div className="col-span-full text-center py-8">
-              <p className="text-muted-foreground">No properties found.</p>
-            </div>
-          )}
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-40 bg-muted rounded-md animate-pulse"></div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredProperties.length > 0 ? (
+              filteredProperties.map(property => (
+                <PropertyCard key={property.id} property={property} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <p className="text-muted-foreground">No properties found.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
