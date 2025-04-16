@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -103,7 +102,11 @@ const IssuesTable = () => {
 
   const getHandymanName = (handymanId: string | null) => {
     if (!handymanId) return 'Unassigned';
-    return issue.handyman?.name || 'Unknown Handyman';
+    
+    // Fix: Changed from "issue.handyman?.name" to using currentIssues array
+    // We need to find the current issue's handyman name from the related data
+    const currentIssue = currentIssues.find(issue => issue.handyman_id === handymanId);
+    return currentIssue?.handyman?.name || 'Unknown Handyman';
   };
 
   const handleStatusFilterChange = (value: string) => {
