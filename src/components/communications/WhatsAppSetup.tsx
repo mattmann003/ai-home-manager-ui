@@ -15,22 +15,23 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { useQuery } from '@tanstack/react-query';
+import { Tables } from '@/integrations/supabase/types';
 
 const WhatsAppSetup = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isConfiguring, setIsConfiguring] = useState(false);
 
   // Fetch current WhatsApp number from system_config
-  const { data: configData, isLoading, refetch } = useQuery({
+  const { data: configData, isLoading, refetch } = useQuery<Tables<'system_config'> | null>({
     queryKey: ['whatsapp-config'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('system_config')
         .select('*')
         .eq('name', 'whatsapp_number')
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 is the error code for "no rows returned"
+      if (error) {
         toast.error('Failed to load WhatsApp configuration');
         return null;
       }

@@ -80,6 +80,44 @@ export type Database = {
         }
         Relationships: []
       }
+      issue_messages: {
+        Row: {
+          channel: string
+          created_at: string
+          direction: string
+          external_id: string | null
+          id: string
+          issue_id: string
+          message: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          direction: string
+          external_id?: string | null
+          id?: string
+          issue_id: string
+          message: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          direction?: string
+          external_id?: string | null
+          id?: string
+          issue_id?: string
+          message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_messages_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issue_timeline: {
         Row: {
           created_by: string | null
@@ -243,6 +281,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      system_config: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
       }
     }
     Views: {
