@@ -13,6 +13,7 @@ import Handymen from "./pages/Handymen";
 import HandymanDetail from "./pages/HandymanDetail";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import KnowledgeBase from "./pages/KnowledgeBase";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/properties/:id" element={<PropertyDetail />} />
           <Route path="/handymen" element={<Handymen />} />
           <Route path="/handymen/:id" element={<HandymanDetail />} />
+          <Route path="/knowledge-base" element={<KnowledgeBase />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />

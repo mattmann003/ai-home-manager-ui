@@ -2,8 +2,7 @@
 import { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import HandymanCard from '@/components/handymen/HandymanCard';
-import { Button } from '@/components/ui/button';
-import { Plus, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -13,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { handymen } from '@/data/mockData';
+import AddHandymanDialog from '@/components/handymen/AddHandymanDialog';
 
 const Handymen = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,10 +39,7 @@ const Handymen = () => {
             <h1 className="text-2xl font-bold tracking-tight">Handymen</h1>
             <p className="text-muted-foreground">Manage your maintenance staff.</p>
           </div>
-          <Button className="flex items-center gap-1">
-            <Plus className="h-4 w-4" />
-            <span>Add Handyman</span>
-          </Button>
+          <AddHandymanDialog />
         </div>
         
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">

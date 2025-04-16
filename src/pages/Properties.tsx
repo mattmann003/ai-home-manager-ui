@@ -1,11 +1,11 @@
 
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import PropertyCard from '@/components/properties/PropertyCard';
-import { Button } from '@/components/ui/button';
-import { Plus, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { properties } from '@/data/mockData';
 import { useState } from 'react';
+import AddPropertyDialog from '@/components/properties/AddPropertyDialog';
 
 const Properties = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,10 +25,7 @@ const Properties = () => {
             <h1 className="text-2xl font-bold tracking-tight">Properties</h1>
             <p className="text-muted-foreground">Manage your rental properties.</p>
           </div>
-          <Button className="flex items-center gap-1">
-            <Plus className="h-4 w-4" />
-            <span>Add Property</span>
-          </Button>
+          <AddPropertyDialog />
         </div>
         
         <div className="flex-1 overflow-hidden">

@@ -10,7 +10,8 @@ import {
   BarChart3, 
   Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  BookOpenCheck
 } from 'lucide-react';
 
 type SidebarLinkProps = {
@@ -69,6 +70,7 @@ const Sidebar = () => {
     { href: '/issues', icon: AlertCircle, title: 'Issues' },
     { href: '/properties', icon: Home, title: 'Properties' },
     { href: '/handymen', icon: Users, title: 'Handymen' },
+    { href: '/knowledge-base', icon: BookOpenCheck, title: 'Knowledge Base' },
     { href: '/analytics', icon: BarChart3, title: 'Analytics' },
     { href: '/settings', icon: Settings, title: 'Settings' },
   ];
