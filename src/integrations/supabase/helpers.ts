@@ -90,6 +90,31 @@ export const fetchAiCalls = async (issueId?: string) => {
   return data || [];
 };
 
+export const fetchDispatchAssignments = async (issueId?: string) => {
+  let query = supabase
+    .from('dispatch_assignments')
+    .select(`
+      *,
+      issue:issues(id, title, property_id, property:properties(name)),
+      handyman:handymen(name, phone)
+    `)
+    .order('dispatch_time', { ascending: false });
+
+  if (issueId) {
+    query = query.eq('issue_id', issueId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching dispatch assignments:', error);
+    toast.error('Failed to load dispatch assignments');
+    return [];
+  }
+
+  return data || [];
+};
+
 export const formatDateTime = (dateString: string) => {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat('en-US', {
