@@ -45,7 +45,6 @@ const IssueCallButton = ({ issueId, guestPhone, guestName }: IssueCallButtonProp
           guestName,
         },
         method: 'POST',
-        path: '/outbound'
       });
       
       if (error) {

@@ -236,8 +236,8 @@ serve(async (req) => {
     
     console.log(`Received request to ${url.pathname}`);
     
-    // Route for handling inbound call webhooks from Vapi
-    if (url.pathname === '/inbound') {
+    // Determine which function to call based on the request body's purpose field
+    if (url.pathname.includes('/inbound') || body.call_id) {
       const result = await handleInboundCall(body);
       return new Response(
         JSON.stringify(result),
@@ -245,19 +245,11 @@ serve(async (req) => {
       );
     }
     
-    // Route for initiating outbound calls
-    if (url.pathname === '/outbound') {
-      const result = await initiateOutboundCall(body);
-      return new Response(
-        JSON.stringify(result),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: result.success ? 200 : 400 }
-      );
-    }
-    
-    // Default response for unknown routes
+    // If it's not an inbound call, assume it's an outbound call request
+    const result = await initiateOutboundCall(body);
     return new Response(
-      JSON.stringify({ success: false, message: "Invalid endpoint" }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+      JSON.stringify(result),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: result.success ? 200 : 400 }
     );
   } catch (error) {
     console.error("Error processing request:", error);
