@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Save, Smartphone, Mail, Bell, UserPlus, UserCog, Phone } from 'lucide-react';
 import VapiCallInfo from '@/components/dashboard/VapiCallInfo';
 import WhatsAppSetup from '@/components/communications/WhatsAppSetup';
+import VapiAgentConfig from '@/components/communications/VapiAgentConfig';
 
 const Settings = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -303,6 +305,8 @@ const Settings = () => {
               <VapiCallInfo />
               <WhatsAppSetup />
             </div>
+            
+            <VapiAgentConfig />
             
             <Card className="shadow-sm">
               <CardHeader>
