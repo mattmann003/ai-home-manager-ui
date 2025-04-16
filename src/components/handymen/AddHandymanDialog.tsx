@@ -85,10 +85,16 @@ export default function AddHandymanDialog() {
   async function onSubmit(data: HandymanFormValues) {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('handymen').insert([{
-        ...data,
+      // Ensure all required fields are present
+      const handyman = {
+        name: data.name,
+        email: data.email,
+        phone: data.phone || null,
+        availability: data.availability,
         specialties: specialties,
-      }]);
+      };
+      
+      const { error } = await supabase.from('handymen').insert(handyman);
       
       if (error) throw error;
       

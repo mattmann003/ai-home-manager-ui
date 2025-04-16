@@ -68,7 +68,20 @@ export default function AddPropertyDialog() {
   async function onSubmit(data: PropertyFormValues) {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('properties').insert([data]);
+      // Ensure all required fields are present
+      const property = {
+        name: data.name,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        zip_code: data.zip_code,
+        type: data.type,
+        owner_name: data.owner_name || null,
+        owner_email: data.owner_email || null,
+        owner_phone: data.owner_phone || null,
+      };
+      
+      const { error } = await supabase.from('properties').insert(property);
       
       if (error) throw error;
       
