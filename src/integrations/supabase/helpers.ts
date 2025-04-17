@@ -1,3 +1,4 @@
+
 import { supabase } from "./client";
 import { toast } from "@/components/ui/sonner";
 
@@ -193,7 +194,7 @@ export const fetchHandymanLocations = async (handymanId?: string) => {
     return [];
   }
 
-  return data as HandymanLocation[] || [];
+  return (data || []) as HandymanLocation[];
 };
 
 export const fetchHandymanAvailability = async (handymanId: string) => {
@@ -211,7 +212,7 @@ export const fetchHandymanAvailability = async (handymanId: string) => {
     return [];
   }
 
-  return data as HandymanAvailability[] || [];
+  return (data || []) as HandymanAvailability[];
 };
 
 export const fetchHandymanTimeOff = async (handymanId: string) => {
@@ -229,7 +230,7 @@ export const fetchHandymanTimeOff = async (handymanId: string) => {
     return [];
   }
 
-  return data as HandymanTimeOff[] || [];
+  return (data || []) as HandymanTimeOff[];
 };
 
 export const formatDateTime = (dateString: string) => {
@@ -371,7 +372,7 @@ export const addHandymanLocation = async (locationData: Omit<HandymanLocation, '
       throw new Error(error.message);
     }
     
-    return { success: true, location: data as HandymanLocation };
+    return { success: true, location: data as unknown as HandymanLocation };
   } catch (error) {
     console.error("Error adding handyman location:", error);
     toast.error(`Failed to add location: ${error.message}`);
@@ -456,7 +457,7 @@ export const requestTimeOff = async (timeOffData: Omit<HandymanTimeOff, 'id'>) =
       throw new Error(error.message);
     }
     
-    return { success: true, timeOff: data as HandymanTimeOff };
+    return { success: true, timeOff: data as unknown as HandymanTimeOff };
   } catch (error) {
     console.error("Error requesting time off:", error);
     toast.error(`Failed to request time off: ${error.message}`);

@@ -11,6 +11,7 @@ import Properties from "./pages/Properties";
 import PropertyDetail from "./pages/PropertyDetail";
 import Handymen from "./pages/Handymen";
 import HandymanDetail from "./pages/HandymanDetail";
+import HandymanManagementPage from "./pages/HandymanManagement";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import KnowledgeBase from "./pages/KnowledgeBase";
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/properties/:id" element={<PropertyDetail />} />
           <Route path="/handymen" element={<Handymen />} />
           <Route path="/handymen/:id" element={<HandymanDetail />} />
+          <Route path="/handymen/manage/:id" element={<HandymanManagementPage />} />
           <Route path="/knowledge-base" element={<KnowledgeBase />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/settings" element={<Settings />} />
