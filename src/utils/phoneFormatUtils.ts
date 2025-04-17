@@ -1,3 +1,4 @@
+
 /**
  * Formats a phone number string for consistent display
  * @param phoneStr The phone number string to format
@@ -28,7 +29,8 @@ export const formatPhoneNumber = (phoneStr: string | null | undefined, defaultVa
     return `(${areaCode}) ${firstPart}-${lastPart}`;
   }
   
-  return cleaned; // Return as is if we can't format it
+  // Return the cleaned string if we can't apply a standard format
+  return cleaned;
 };
 
 /**
@@ -48,6 +50,40 @@ export const formatPhoneE164 = (phoneStr: string | null | undefined): string | n
     return `+1${cleaned}`;
   }
   
-  // Otherwise, assume it already has a country code
+  // If it already has a country code
   return `+${cleaned}`;
+};
+
+/**
+ * Validates a phone number 
+ * @param phoneStr The phone number string to validate
+ * @returns boolean indicating if phone number is valid
+ */
+export const isValidPhoneNumber = (phoneStr: string | null | undefined): boolean => {
+  if (!phoneStr) return false;
+  
+  // Remove any non-numeric characters
+  const cleaned = phoneStr.replace(/\D/g, '');
+  
+  // Check if it has at least 10 digits (US format)
+  // Most international numbers will have more than 10 digits
+  return cleaned.length >= 10;
+};
+
+/**
+ * Extracts a country code from a phone number
+ * @param phoneStr The phone number string
+ * @returns The country code or null if not found
+ */
+export const extractCountryCode = (phoneStr: string | null | undefined): string | null => {
+  if (!phoneStr) return null;
+  
+  // Check if the phone number starts with a plus sign and has at least one digit after
+  const match = phoneStr.match(/^\+(\d+)/);
+  
+  if (match && match[1]) {
+    return match[1];
+  }
+  
+  return null;
 };

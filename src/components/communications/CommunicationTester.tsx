@@ -23,6 +23,7 @@ const CommunicationTester = () => {
   const [recipientPhone, setRecipientPhone] = useState('');
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [activeTab, setActiveTab] = useState('whatsapp');
 
   // Get the WhatsApp number
   const { data: whatsappConfig } = useQuery({
@@ -140,7 +141,7 @@ const CommunicationTester = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="whatsapp">
+        <Tabs defaultValue="whatsapp" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="whatsapp">
               <div className="flex items-center gap-2">
@@ -206,47 +207,43 @@ const CommunicationTester = () => {
         </Tabs>
       </CardContent>
       <CardFooter>
-        <Tabs.Consumer>
-          {(context) => 
-            context?.value === 'whatsapp' ? (
-              <Button 
-                onClick={handleSendWhatsApp} 
-                disabled={isSending || !isWhatsAppConfigured}
-                className="w-full gap-2"
-              >
-                {isSending ? (
-                  <>
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                    <span>Sending...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4" />
-                    <span>Send WhatsApp</span>
-                  </>
-                )}
-              </Button>
+        {activeTab === 'whatsapp' ? (
+          <Button 
+            onClick={handleSendWhatsApp} 
+            disabled={isSending || !isWhatsAppConfigured}
+            className="w-full gap-2"
+          >
+            {isSending ? (
+              <>
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                <span>Sending...</span>
+              </>
             ) : (
-              <Button 
-                onClick={handleInitiateCall} 
-                disabled={isSending}
-                className="w-full gap-2"
-              >
-                {isSending ? (
-                  <>
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                    <span>Initiating Call...</span>
-                  </>
-                ) : (
-                  <>
-                    <PhoneCall className="h-4 w-4" />
-                    <span>Initiate Call</span>
-                  </>
-                )}
-              </Button>
-            )
-          }
-        </Tabs.Consumer>
+              <>
+                <Send className="h-4 w-4" />
+                <span>Send WhatsApp</span>
+              </>
+            )}
+          </Button>
+        ) : (
+          <Button 
+            onClick={handleInitiateCall} 
+            disabled={isSending}
+            className="w-full gap-2"
+          >
+            {isSending ? (
+              <>
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                <span>Initiating Call...</span>
+              </>
+            ) : (
+              <>
+                <PhoneCall className="h-4 w-4" />
+                <span>Initiate Call</span>
+              </>
+            )}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
