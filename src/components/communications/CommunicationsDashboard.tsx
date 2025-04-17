@@ -1,9 +1,10 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Phone, MessagesSquare, Settings } from 'lucide-react';
+import { Phone, MessagesSquare, Settings, Beaker } from 'lucide-react';
 import WhatsAppSetup from './WhatsAppSetup';
 import VoiceCallPanel from './VoiceCallPanel';
+import CommunicationTester from './CommunicationTester';
 import BasicSettingsForm from './forms/BasicSettingsForm';
 import IntegrationsForm from './forms/IntegrationsForm';
 import { useQuery } from '@tanstack/react-query';
@@ -66,7 +67,7 @@ const CommunicationsDashboard = () => {
       </p>
 
       <Tabs defaultValue="tools" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="tools">
             <div className="flex items-center gap-2">
               <MessagesSquare className="h-4 w-4" />
@@ -77,6 +78,12 @@ const CommunicationsDashboard = () => {
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4" />
               <span className="hidden sm:inline">Dispatch</span>
+            </div>
+          </TabsTrigger>
+          <TabsTrigger value="testing">
+            <div className="flex items-center gap-2">
+              <Beaker className="h-4 w-4" />
+              <span className="hidden sm:inline">Testing</span>
             </div>
           </TabsTrigger>
           <TabsTrigger value="settings">
@@ -96,6 +103,12 @@ const CommunicationsDashboard = () => {
         
         <TabsContent value="dispatch" className="space-y-6">
           <DispatchConfiguration initialConfig={dispatchConfig} isLoading={isLoading} />
+        </TabsContent>
+        
+        <TabsContent value="testing" className="space-y-6">
+          <div className="max-w-xl mx-auto">
+            <CommunicationTester />
+          </div>
         </TabsContent>
         
         <TabsContent value="settings" className="space-y-6">

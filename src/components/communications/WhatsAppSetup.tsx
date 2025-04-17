@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { useQuery } from '@tanstack/react-query';
 import { Tables } from '@/integrations/supabase/types';
+import { formatPhoneNumber, formatPhoneE164 } from '@/utils/phoneFormatUtils';
 
 const WhatsAppSetup = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -40,34 +41,6 @@ const WhatsAppSetup = () => {
     }
   });
 
-  // Format phone number correctly for display
-  const formatPhoneNumber = (phoneStr) => {
-    if (!phoneStr) return "Not configured";
-    
-    // Remove any non-numeric characters
-    const cleaned = phoneStr.replace(/\D/g, '');
-    
-    // Check if the string starts with a country code
-    const hasCountryCode = cleaned.length > 10;
-    
-    // Format the number: +X (XXX) XXX-XXXX or (XXX) XXX-XXXX
-    if (hasCountryCode) {
-      const countryCode = cleaned.slice(0, cleaned.length - 10);
-      const areaCode = cleaned.slice(cleaned.length - 10, cleaned.length - 7);
-      const firstPart = cleaned.slice(cleaned.length - 7, cleaned.length - 4);
-      const lastPart = cleaned.slice(cleaned.length - 4);
-      return `+${countryCode} (${areaCode}) ${firstPart}-${lastPart}`;
-    } else if (cleaned.length === 10) {
-      // No country code, assume US number
-      const areaCode = cleaned.slice(0, 3);
-      const firstPart = cleaned.slice(3, 6);
-      const lastPart = cleaned.slice(6);
-      return `(${areaCode}) ${firstPart}-${lastPart}`;
-    }
-    
-    return cleaned; // Return as is if we can't format it
-  };
-
   const handleConfigureWhatsApp = async () => {
     if (!phoneNumber) {
       toast.error('Please enter a phone number');
@@ -77,10 +50,17 @@ const WhatsAppSetup = () => {
     setIsConfiguring(true);
     
     try {
+      // Format phone number in E.164 format for Twilio
+      const formattedPhone = formatPhoneE164(phoneNumber);
+      
+      if (!formattedPhone) {
+        throw new Error('Invalid phone number format');
+      }
+      
       const { data, error } = await supabase.functions.invoke('twilio-handler', {
         body: {
           purpose: 'configure',
-          phoneNumber: phoneNumber
+          phoneNumber: formattedPhone
         }
       });
       
@@ -97,7 +77,7 @@ const WhatsAppSetup = () => {
         .from('system_config')
         .upsert({
           name: 'vapi_twilio_phone',
-          value: phoneNumber,
+          value: formattedPhone,
           description: 'Twilio phone number for outbound calls'
         });
         
