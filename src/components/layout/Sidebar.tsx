@@ -1,6 +1,5 @@
 
-import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { 
   LayoutDashboard, 
@@ -9,121 +8,71 @@ import {
   Users, 
   BarChart3, 
   Settings,
-  ChevronLeft,
-  ChevronRight,
-  BookOpenCheck
 } from 'lucide-react';
 
-type SidebarLinkProps = {
+type NavItemProps = {
   href: string;
   icon: React.ElementType;
   title: string;
   isActive: boolean;
-  isCollapsed: boolean;
 };
 
-const SidebarLink = ({ href, icon: Icon, title, isActive, isCollapsed }: SidebarLinkProps) => {
+const NavItem = ({ href, icon: Icon, title, isActive }: NavItemProps) => {
   return (
     <Link
       to={href}
       className={cn(
         "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all",
         isActive 
-          ? "bg-primary text-primary-foreground" 
-          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-        isCollapsed && "justify-center px-2"
+          ? "bg-primary/10 text-primary font-medium" 
+          : "text-foreground/70 hover:bg-primary/5 hover:text-foreground"
       )}
     >
-      <Icon className={cn("h-5 w-5", isCollapsed ? "mr-0" : "mr-2")} />
-      {!isCollapsed && <span>{title}</span>}
+      <Icon className="h-5 w-5" />
+      <span>{title}</span>
     </Link>
   );
 };
 
 const Sidebar = () => {
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-      if (window.innerWidth < 768) {
-        setIsCollapsed(true);
-      }
-    };
-    
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-  };
 
   const navItems = [
     { href: '/', icon: LayoutDashboard, title: 'Dashboard' },
     { href: '/issues', icon: AlertCircle, title: 'Issues' },
     { href: '/properties', icon: Home, title: 'Properties' },
     { href: '/handymen', icon: Users, title: 'Handymen' },
-    { href: '/knowledge-base', icon: BookOpenCheck, title: 'Knowledge Base' },
     { href: '/analytics', icon: BarChart3, title: 'Analytics' },
     { href: '/settings', icon: Settings, title: 'Settings' },
   ];
 
   return (
-    <aside
-      className={cn(
-        "flex flex-col border-r bg-sidebar transition-all h-screen sticky top-0 shadow-sm",
-        isCollapsed ? "w-16" : "w-64"
-      )}
-    >
-      <div className="flex items-center justify-between h-16 px-4 border-b">
-        {!isCollapsed && (
-          <Link to="/" className="font-semibold text-lg flex items-center space-x-1">
-            <span className="text-primary">AI</span>
-            <span>Maintenance</span>
-          </Link>
-        )}
-        <button 
-          onClick={toggleSidebar} 
-          className={cn(
-            "p-2 rounded-md hover:bg-sidebar-accent text-sidebar-foreground",
-            isCollapsed && "ml-auto mr-auto"
-          )}
-        >
-          {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
+    <aside className="fixed left-0 top-0 z-20 flex h-screen w-64 flex-col border-r bg-background">
+      <div className="flex h-16 items-center border-b px-6">
+        <Link to="/" className="flex items-center gap-2 font-semibold">
+          <span className="text-xl font-bold">AI Maintenance</span>
+        </Link>
       </div>
-
-      <nav className="flex-1 space-y-1 p-3">
-        {navItems.map((item) => (
-          <SidebarLink
-            key={item.href}
-            href={item.href}
-            icon={item.icon}
-            title={item.title}
-            isActive={location.pathname === item.href}
-            isCollapsed={isCollapsed}
-          />
-        ))}
-      </nav>
-
+      
+      <div className="flex-1 overflow-auto py-6">
+        <nav className="space-y-1 px-3">
+          {navItems.map((item) => (
+            <NavItem
+              key={item.href}
+              href={item.href}
+              icon={item.icon}
+              title={item.title}
+              isActive={location.pathname === item.href}
+            />
+          ))}
+        </nav>
+      </div>
+      
       <div className="border-t p-3">
-        <div className={cn(
-          "flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground",
-          isCollapsed && "justify-center px-2"
-        )}>
-          {!isCollapsed && (
-            <div className="text-xs text-sidebar-foreground/70">
-              <p>AI Maintenance Assistant</p>
-              <p>v1.0.0</p>
-            </div>
-          )}
+        <div className="px-3 py-2">
+          <div className="text-xs text-muted-foreground">
+            <p>Assistant</p>
+          </div>
         </div>
       </div>
     </aside>

@@ -1,6 +1,6 @@
 
+import { Bell, ChevronDown, Search } from 'lucide-react';
 import { useState } from 'react';
-import { Bell, User, ChevronDown, Search } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -33,16 +33,11 @@ const Topbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
+    <header className="sticky top-0 z-10 flex h-16 items-center border-b bg-background px-6">
       <div className="flex flex-1 items-center justify-between">
-        <div className="flex items-center gap-2 md:w-[300px]">
-          <div className="relative w-full">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="w-full rounded-md pl-8 md:w-[300px] bg-background"
-            />
+        <div className="flex items-center">
+          <div className="flex h-7 w-7 items-center justify-center rounded border">
+            <img src="/placeholder.svg" alt="Logo" className="h-5 w-5" />
           </div>
         </div>
         
@@ -53,7 +48,7 @@ const Topbar = () => {
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
                   <Badge 
-                    className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-primary"
+                    className="absolute -top-1 -right-1 h-4 w-4 rounded-full p-0 flex items-center justify-center bg-primary text-[10px]"
                   >
                     {unreadCount}
                   </Badge>
@@ -103,15 +98,12 @@ const Topbar = () => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-1 md:gap-2">
+              <Button variant="ghost" size="sm" className="gap-2">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="/placeholder.svg" alt="User avatar" />
                   <AvatarFallback>JD</AvatarFallback>
                 </Avatar>
-                <div className="hidden md:flex flex-col items-start text-sm">
-                  <span className="font-medium">John Doe</span>
-                  <span className="text-xs text-muted-foreground">Admin</span>
-                </div>
+                <span className="font-medium">John Doe</span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
