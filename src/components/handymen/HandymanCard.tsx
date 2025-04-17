@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Handyman, properties } from '@/data/mockData';
-import { Star, Clock, Briefcase } from 'lucide-react';
+import { Star, Clock, Briefcase, MapPin } from 'lucide-react';
 
 type HandymanCardProps = {
   handyman: Handyman;
@@ -64,12 +64,21 @@ const HandymanCard = ({ handyman }: HandymanCardProps) => {
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <Link
-          to={`/handymen/${handyman.id}`}
-          className="w-full text-center text-sm py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-        >
-          View Profile
-        </Link>
+        <div className="w-full flex flex-col gap-2">
+          <Link
+            to={`/handymen/${handyman.id}`}
+            className="w-full text-center text-sm py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            View Profile
+          </Link>
+          <Link
+            to={`/handymen/manage/${handyman.id}`}
+            className="w-full text-center text-sm py-2 rounded-md bg-muted hover:bg-muted/80 transition-colors flex items-center justify-center"
+          >
+            <MapPin className="h-3.5 w-3.5 mr-1" />
+            Manage Coverage
+          </Link>
+        </div>
       </CardFooter>
     </Card>
   );

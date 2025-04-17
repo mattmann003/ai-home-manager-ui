@@ -143,6 +143,91 @@ export const fetchDispatchAssignments = async (issueId?: string) => {
   return data as DispatchAssignment[] || [];
 };
 
+// Define interface for handyman location coverage
+export interface HandymanLocation {
+  id: string;
+  handyman_id: string;
+  coverage_type: 'zip_code' | 'city' | 'radius';
+  location_value: string;
+  radius_miles?: number;
+  priority: number;
+  is_primary: boolean;
+}
+
+// Define interface for handyman availability
+export interface HandymanAvailability {
+  id: string;
+  handyman_id: string;
+  day_of_week: number; // 0-6 (Sunday-Saturday)
+  start_time: string; // Format: "09:00:00"
+  end_time: string; // Format: "17:00:00"
+  is_available: boolean;
+}
+
+// Define interface for time-off requests
+export interface HandymanTimeOff {
+  id: string;
+  handyman_id: string;
+  start_date: string;
+  end_date: string;
+  reason: string;
+  status: 'requested' | 'approved' | 'denied';
+}
+
+export const fetchHandymanLocations = async (handymanId?: string) => {
+  const query = supabase.from('handyman_locations') as any;
+  
+  let selection = query.select('*').order('priority', { ascending: true });
+
+  if (handymanId) {
+    selection = selection.eq('handyman_id', handymanId);
+  }
+
+  const { data, error } = await selection;
+
+  if (error) {
+    console.error('Error fetching handyman locations:', error);
+    toast.error('Failed to load handyman locations');
+    return [];
+  }
+
+  return data as HandymanLocation[] || [];
+};
+
+export const fetchHandymanAvailability = async (handymanId: string) => {
+  const query = supabase.from('handyman_availability') as any;
+  
+  const { data, error } = await query
+    .select('*')
+    .eq('handyman_id', handymanId)
+    .order('day_of_week', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching handyman availability:', error);
+    toast.error('Failed to load handyman availability');
+    return [];
+  }
+
+  return data as HandymanAvailability[] || [];
+};
+
+export const fetchHandymanTimeOff = async (handymanId: string) => {
+  const query = supabase.from('handyman_time_off') as any;
+  
+  const { data, error } = await query
+    .select('*')
+    .eq('handyman_id', handymanId)
+    .order('start_date', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching handyman time off:', error);
+    toast.error('Failed to load handyman time off');
+    return [];
+  }
+
+  return data as HandymanTimeOff[] || [];
+};
+
 export const formatDateTime = (dateString: string) => {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat('en-US', {
