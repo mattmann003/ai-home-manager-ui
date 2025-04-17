@@ -41,19 +41,21 @@ const AvailabilityCalendar = ({ handymanId }: { handymanId: string }) => {
   
   const { data: availability = [], isLoading: isLoadingAvailability } = useQuery({
     queryKey: ['handyman-availability', handymanId],
-    queryFn: () => fetchHandymanAvailability(handymanId),
-    onSuccess: (data) => {
-      if (data.length > 0) {
-        const newWorkingHours = { ...workingHours };
-        data.forEach((a: HandymanAvailability) => {
-          newWorkingHours[a.day_of_week] = {
-            start: a.start_time.substring(0, 5), // Format: HH:MM
-            end: a.end_time.substring(0, 5),     // Format: HH:MM
-            isWorking: a.is_available,
-          };
-        });
-        setWorkingHours(newWorkingHours);
-      }
+    queryFn: () => fetchHandymanAvailability(handymanId)
+  });
+  
+  // Handle data after it's fetched
+  useState(() => {
+    if (availability.length > 0) {
+      const newWorkingHours = { ...workingHours };
+      availability.forEach((a: HandymanAvailability) => {
+        newWorkingHours[a.day_of_week] = {
+          start: a.start_time.substring(0, 5), // Format: HH:MM
+          end: a.end_time.substring(0, 5),     // Format: HH:MM
+          isWorking: a.is_available,
+        };
+      });
+      setWorkingHours(newWorkingHours);
     }
   });
   
@@ -87,8 +89,8 @@ const AvailabilityCalendar = ({ handymanId }: { handymanId: string }) => {
   const saveWorkingHours = async () => {
     try {
       // First delete existing records
-      await supabase
-        .from('handyman_availability')
+      await (supabase
+        .from('handyman_availability') as any)
         .delete()
         .eq('handyman_id', handymanId);
       
@@ -101,8 +103,8 @@ const AvailabilityCalendar = ({ handymanId }: { handymanId: string }) => {
         is_available: hours.isWorking
       }));
       
-      const { error } = await supabase
-        .from('handyman_availability')
+      const { error } = await (supabase
+        .from('handyman_availability') as any)
         .insert(records);
       
       if (error) throw error;
@@ -123,8 +125,8 @@ const AvailabilityCalendar = ({ handymanId }: { handymanId: string }) => {
     }
     
     try {
-      const { error } = await supabase
-        .from('handyman_time_off')
+      const { error } = await (supabase
+        .from('handyman_time_off') as any)
         .insert({
           handyman_id: handymanId,
           start_date: timeOffRange.from.toISOString(),
@@ -153,8 +155,8 @@ const AvailabilityCalendar = ({ handymanId }: { handymanId: string }) => {
   
   const deleteTimeOff = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('handyman_time_off')
+      const { error } = await (supabase
+        .from('handyman_time_off') as any)
         .delete()
         .eq('id', id);
       
