@@ -90,21 +90,49 @@ export const fetchAiCalls = async (issueId?: string) => {
   return data || [];
 };
 
+// Define interface for dispatch assignments
+export interface DispatchAssignment {
+  id: string;
+  issue_id: string;
+  handyman_id: string;
+  status: string;
+  dispatch_time: string;
+  response_time: string | null;
+  issue?: {
+    id: string;
+    title: string;
+    priority?: string;
+    property_id?: string;
+    property?: {
+      name: string;
+      address: string;
+      city: string;
+      state: string;
+    }
+  };
+  handyman?: {
+    name: string;
+    phone: string;
+  };
+}
+
 export const fetchDispatchAssignments = async (issueId?: string) => {
-  let query = supabase
-    .from('dispatch_assignments')
+  // Use any to bypass TypeScript strictness since the table isn't in our types yet
+  const query = supabase.from('dispatch_assignments') as any;
+  
+  let selection = query
     .select(`
       *,
-      issue:issues(id, title, property_id, property:properties(name)),
+      issue:issues(id, title, property_id, priority, property:properties(name, address, city, state)),
       handyman:handymen(name, phone)
     `)
     .order('dispatch_time', { ascending: false });
 
   if (issueId) {
-    query = query.eq('issue_id', issueId);
+    selection = selection.eq('issue_id', issueId);
   }
 
-  const { data, error } = await query;
+  const { data, error } = await selection;
 
   if (error) {
     console.error('Error fetching dispatch assignments:', error);
@@ -112,7 +140,7 @@ export const fetchDispatchAssignments = async (issueId?: string) => {
     return [];
   }
 
-  return data || [];
+  return data as DispatchAssignment[] || [];
 };
 
 export const formatDateTime = (dateString: string) => {

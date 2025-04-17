@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
+import { fetchDispatchAssignments, type DispatchAssignment } from '@/integrations/supabase/helpers';
 
 interface HandymanMetrics {
   handymanId: string;
@@ -25,20 +25,6 @@ interface HandymanMetrics {
   averageResponseTime: number;
   acceptanceRate: number;
   pendingCount: number;
-}
-
-interface DispatchData {
-  id: string;
-  issue_id: string;
-  issue_title?: string;
-  handyman_id: string;
-  handyman_name?: string;
-  property_name?: string;
-  property_address?: string;
-  status: string;
-  dispatch_time: string;
-  response_time: string | null;
-  priority?: string;
 }
 
 const statusColors = {
@@ -68,45 +54,33 @@ const DispatchDashboard = () => {
   } = useQuery({
     queryKey: ['dispatch-dashboard', activeTab],
     queryFn: async () => {
-      let query = supabase
-        .from('dispatch_assignments')
-        .select(`
-          *,
-          issue:issues(id, title, description, priority),
-          handyman:handymen(id, name, phone),
-          property:issues(property:properties(name, address, city, state, zip_code))
-        `);
-      
+      const assignments = await fetchDispatchAssignments();
+
       // Filter based on active tab
+      let filtered = assignments;
       if (activeTab === 'pending') {
-        query = query.eq('status', 'pending');
+        filtered = assignments.filter(d => d.status === 'pending');
       } else if (activeTab === 'accepted') {
-        query = query.eq('status', 'accepted');
+        filtered = assignments.filter(d => d.status === 'accepted');
       } else if (activeTab === 'declined') {
-        query = query.eq('status', 'declined');
+        filtered = assignments.filter(d => d.status === 'declined');
       }
       
-      query = query.order('dispatch_time', { ascending: false });
-      
-      const { data, error } = await query;
-      
-      if (error) throw error;
-      
       // Transform data for easier display
-      return data.map(d => ({
+      return filtered.map(d => ({
         id: d.id,
         issue_id: d.issue_id,
-        issue_title: d.issue?.title,
+        issue_title: d.issue?.title || 'Unknown Issue',
         handyman_id: d.handyman_id,
-        handyman_name: d.handyman?.name,
-        property_name: d.property?.[0]?.property?.name,
-        property_address: d.property?.[0]?.property ? 
-          `${d.property[0].property.address}, ${d.property[0].property.city}, ${d.property[0].property.state}` :
+        handyman_name: d.handyman?.name || 'Unknown',
+        property_name: d.issue?.property?.name || 'Unknown Property',
+        property_address: d.issue?.property ? 
+          `${d.issue.property.address}, ${d.issue.property.city}, ${d.issue.property.state}` :
           'Unknown location',
         status: d.status,
         dispatch_time: d.dispatch_time,
         response_time: d.response_time,
-        priority: d.issue?.priority
+        priority: d.issue?.priority || 'Medium'
       }));
     },
     refetchInterval: 30000 // Refetch every 30 seconds
@@ -116,17 +90,7 @@ const DispatchDashboard = () => {
   const { data: handymanMetrics } = useQuery({
     queryKey: ['handyman-metrics'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('dispatch_assignments')
-        .select(`
-          handyman_id,
-          handyman:handymen(name),
-          status,
-          dispatch_time,
-          response_time
-        `);
-      
-      if (error) throw error;
+      const assignments = await fetchDispatchAssignments();
       
       // Calculate metrics for each handyman
       const handymenMap = new Map<string, {
@@ -140,7 +104,7 @@ const DispatchDashboard = () => {
         responseCounts: number;
       }>();
       
-      data.forEach(dispatch => {
+      assignments.forEach(dispatch => {
         const handymanId = dispatch.handyman_id;
         const handymanName = dispatch.handyman?.name || 'Unknown';
         

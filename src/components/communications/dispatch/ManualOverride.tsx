@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,6 +34,10 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { formatDistanceToNow } from 'date-fns';
+import { 
+  fetchDispatchAssignments, 
+  type DispatchAssignment 
+} from '@/integrations/supabase/helpers';
 
 // Form validation schema
 const dispatchFormSchema = z.object({
@@ -50,7 +53,7 @@ type DispatchFormValues = z.infer<typeof dispatchFormSchema>;
 
 const ManualOverride = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [lastSentDispatch, setLastSentDispatch] = useState<any>(null);
+  const [lastSentDispatch, setLastSentDispatch] = useState<DispatchAssignment | null>(null);
 
   const form = useForm<DispatchFormValues>({
     resolver: zodResolver(dispatchFormSchema),
@@ -102,13 +105,8 @@ const ManualOverride = () => {
   const { data: pendingDispatches } = useQuery({
     queryKey: ['pending-dispatches'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('dispatch_assignments')
-        .select('issue_id, handyman_id')
-        .eq('status', 'pending');
-      
-      if (error) throw error;
-      return data;
+      const assignments = await fetchDispatchAssignments();
+      return assignments.filter(a => a.status === 'pending');
     },
   });
 
@@ -158,23 +156,18 @@ const ManualOverride = () => {
       }
       
       // Get the dispatch that was just created
-      const { data } = await supabase
-        .from('dispatch_assignments')
-        .select(`
-          *,
-          handyman:handymen(name),
-          issue:issues(title)
-        `)
-        .eq('issue_id', values.issueId)
-        .eq('handyman_id', values.handymanId)
-        .order('dispatch_time', { ascending: false })
-        .limit(1)
-        .single();
+      const assignments = await fetchDispatchAssignments();
+      const latestDispatch = assignments
+        .filter(d => d.issue_id === values.issueId && d.handyman_id === values.handymanId)
+        .sort((a, b) => new Date(b.dispatch_time).getTime() - new Date(a.dispatch_time).getTime())[0];
       
-      setLastSentDispatch(data);
+      if (latestDispatch) {
+        setLastSentDispatch(latestDispatch);
+      }
+      
       toast.success('Dispatch sent successfully');
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending dispatch:', error);
       toast.error(`Failed to send dispatch: ${error.message}`);
     } finally {

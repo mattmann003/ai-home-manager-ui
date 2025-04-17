@@ -25,7 +25,7 @@ const HandymanDispatchSystem = () => {
       if (error) throw error;
       
       // Transform array to object
-      return data.reduce((acc, item) => {
+      return data.reduce((acc: Record<string, any>, item: any) => {
         acc[item.name] = item.value;
         return acc;
       }, {});
