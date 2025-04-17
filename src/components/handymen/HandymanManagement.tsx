@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { motion } from 'framer-motion';
 import HandymanProfile from './management/HandymanProfile';
 import LocationCoverage from './management/LocationCoverage';
@@ -9,10 +9,12 @@ import AvailabilityCalendar from './management/AvailabilityCalendar';
 import PropertyMatching from './management/PropertyMatching';
 import { useQuery } from '@tanstack/react-query';
 import { fetchHandymen } from '@/integrations/supabase/helpers';
-import { useParams } from 'react-router-dom';
 
-const HandymanManagement = () => {
-  const { id } = useParams<{ id: string }>();
+interface HandymanManagementProps {
+  handymanId: string;
+}
+
+const HandymanManagement = ({ handymanId }: HandymanManagementProps) => {
   const [selectedTab, setSelectedTab] = useState('profile');
 
   const { data: handymen, isLoading } = useQuery({
@@ -20,7 +22,7 @@ const HandymanManagement = () => {
     queryFn: fetchHandymen
   });
 
-  const handyman = handymen?.find(h => h.id === id);
+  const handyman = handymen?.find(h => h.id === handymanId);
 
   const handleTabChange = (value: string) => {
     setSelectedTab(value);

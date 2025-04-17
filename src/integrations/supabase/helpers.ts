@@ -175,9 +175,10 @@ export interface HandymanTimeOff {
 }
 
 export const fetchHandymanLocations = async (handymanId?: string) => {
-  const query = supabase.from('handyman_locations') as any;
+  let query = supabase.from('handyman_locations');
   
-  let selection = query.select('*').order('priority', { ascending: true });
+  // Type assertion to bypass TypeScript's type checking since this table isn't in the types
+  let selection = (query as any).select('*').order('priority', { ascending: true });
 
   if (handymanId) {
     selection = selection.eq('handyman_id', handymanId);
@@ -195,6 +196,7 @@ export const fetchHandymanLocations = async (handymanId?: string) => {
 };
 
 export const fetchHandymanAvailability = async (handymanId: string) => {
+  // Type assertion to bypass TypeScript's type checking
   const query = supabase.from('handyman_availability') as any;
   
   const { data, error } = await query
@@ -212,6 +214,7 @@ export const fetchHandymanAvailability = async (handymanId: string) => {
 };
 
 export const fetchHandymanTimeOff = async (handymanId: string) => {
+  // Type assertion to bypass TypeScript's type checking
   const query = supabase.from('handyman_time_off') as any;
   
   const { data, error } = await query

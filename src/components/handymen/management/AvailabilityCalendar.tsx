@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -44,8 +44,8 @@ const AvailabilityCalendar = ({ handymanId }: { handymanId: string }) => {
     queryFn: () => fetchHandymanAvailability(handymanId)
   });
   
-  // Handle data after it's fetched
-  useState(() => {
+  // Handle data after it's fetched - use useEffect instead of useState
+  useEffect(() => {
     if (availability.length > 0) {
       const newWorkingHours = { ...workingHours };
       availability.forEach((a: HandymanAvailability) => {
@@ -57,7 +57,7 @@ const AvailabilityCalendar = ({ handymanId }: { handymanId: string }) => {
       });
       setWorkingHours(newWorkingHours);
     }
-  });
+  }, [availability]); // Depend on availability data
   
   const { data: timeOff = [], isLoading: isLoadingTimeOff } = useQuery({
     queryKey: ['handyman-time-off', handymanId],

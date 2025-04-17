@@ -18,7 +18,7 @@ const HandymanManagementPage = () => {
 
   return (
     <DashboardLayout>
-      <HandymanManagement />
+      <HandymanManagement handymanId={id} />
     </DashboardLayout>
   );
 };
