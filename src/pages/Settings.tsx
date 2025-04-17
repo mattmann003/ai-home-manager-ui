@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -9,10 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Save, Smartphone, Mail, Bell, UserPlus, UserCog, Phone, MessageSquare } from 'lucide-react';
-import VapiCallInfo from '@/components/dashboard/VapiCallInfo';
-import WhatsAppSetup from '@/components/communications/WhatsAppSetup';
-import VapiAgentConfig from '@/components/communications/VapiAgentConfig';
+import { Save, Smartphone, Mail, Bell, UserPlus, UserCog } from 'lucide-react';
 import HandymanDispatchSystem from '@/components/communications/HandymanDispatchSystem';
 
 const Settings = () => {
@@ -29,7 +25,7 @@ const Settings = () => {
         </div>
         
         <Tabs defaultValue="notifications" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 mb-4">
+          <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="notifications">
               <Bell className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Notifications</span>
@@ -38,12 +34,8 @@ const Settings = () => {
               <UserCog className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Permissions</span>
             </TabsTrigger>
-            <TabsTrigger value="voicecalls">
-              <Phone className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Voice Calls</span>
-            </TabsTrigger>
             <TabsTrigger value="messaging">
-              <MessageSquare className="h-4 w-4 mr-2" />
+              <Smartphone className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Messaging</span>
             </TabsTrigger>
           </TabsList>
@@ -305,16 +297,74 @@ const Settings = () => {
             </Card>
           </TabsContent>
           
-          <TabsContent value="voicecalls" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <VapiCallInfo />
-              <WhatsAppSetup />
-            </div>
-            
-            <VapiAgentConfig />
-          </TabsContent>
-
           <TabsContent value="messaging" className="space-y-6">
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle>Communication Settings</CardTitle>
+                <CardDescription>Voice and messaging services are configured in the backend</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="rounded-md bg-blue-50 p-4">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-blue-800">Communication Services</h3>
+                        <div className="mt-2 text-sm text-blue-700">
+                          <p>
+                            Voice assistant (Vapi), WhatsApp, and Twilio services are now configured automatically in the backend.
+                            These services handle tenant communications, handyman dispatches, and voice calls without requiring frontend configuration.
+                          </p>
+                        </div>
+                        <div className="mt-4">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                              <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
+                                <svg className="h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              </div>
+                            </div>
+                            <div className="ml-3">
+                              <p className="text-sm font-medium text-blue-800">Voice Calls - Active</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center mt-4">
+                            <div className="flex-shrink-0">
+                              <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
+                                <svg className="h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              </div>
+                            </div>
+                            <div className="ml-3">
+                              <p className="text-sm font-medium text-blue-800">WhatsApp Messaging - Active</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center mt-4">
+                            <div className="flex-shrink-0">
+                              <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
+                                <svg className="h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              </div>
+                            </div>
+                            <div className="ml-3">
+                              <p className="text-sm font-medium text-blue-800">SMS Notifications - Active</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
             <HandymanDispatchSystem />
           </TabsContent>
         </Tabs>
