@@ -30,9 +30,34 @@ const VapiCallInfo = () => {
     }
   });
   
-  // Format the phone number for display
+  // Format the phone number correctly for display
+  const formatPhoneNumber = (phoneStr) => {
+    if (!phoneStr) return "+1 (555) 123-4567"; // Placeholder
+    
+    // Remove any non-numeric characters
+    const cleaned = phoneStr.replace(/\D/g, '');
+    
+    // Check if the string starts with a country code
+    const hasCountryCode = cleaned.length > 10;
+    
+    // Format the number: +X (XXX) XXX-XXXX or (XXX) XXX-XXXX
+    if (hasCountryCode) {
+      const countryCode = cleaned.slice(0, cleaned.length - 10);
+      const areaCode = cleaned.slice(cleaned.length - 10, cleaned.length - 7);
+      const firstPart = cleaned.slice(cleaned.length - 7, cleaned.length - 4);
+      const lastPart = cleaned.slice(cleaned.length - 4);
+      return `+${countryCode} (${areaCode}) ${firstPart}-${lastPart}`;
+    } else {
+      // No country code, assume US number
+      const areaCode = cleaned.slice(0, 3);
+      const firstPart = cleaned.slice(3, 6);
+      const lastPart = cleaned.slice(6);
+      return `(${areaCode}) ${firstPart}-${lastPart}`;
+    }
+  };
+  
   const phoneNumber = phoneConfig?.value 
-    ? `+${phoneConfig.value.replace(/\D/g, '')}` 
+    ? formatPhoneNumber(phoneConfig.value) 
     : "+1 (555) 123-4567"; // Placeholder if not configured
   
   return (
