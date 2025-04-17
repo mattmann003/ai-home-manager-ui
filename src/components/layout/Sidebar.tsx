@@ -1,82 +1,76 @@
 
-import { useLocation, Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, Building, Wrench, User2, Settings, BarChart3, PhoneCall } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { 
-  LayoutDashboard, 
-  AlertCircle, 
-  Home, 
-  Users, 
-  BarChart3, 
-  Settings,
-} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
-type NavItemProps = {
-  href: string;
-  icon: React.ElementType;
-  title: string;
-  isActive: boolean;
-};
+const mainNavItems = [
+  {
+    title: 'Dashboard',
+    href: '/',
+    icon: Home,
+  },
+  {
+    title: 'Properties',
+    href: '/properties',
+    icon: Building,
+  },
+  {
+    title: 'Maintenance',
+    href: '/issues',
+    icon: Wrench,
+  },
+  {
+    title: 'Handymen',
+    href: '/handymen',
+    icon: User2,
+  },
+  {
+    title: 'Analytics',
+    href: '/analytics',
+    icon: BarChart3,
+  },
+  {
+    title: 'Communications',
+    href: '/communications',
+    icon: PhoneCall,
+  },
+  {
+    title: 'Settings',
+    href: '/settings',
+    icon: Settings,
+  },
+];
 
-const NavItem = ({ href, icon: Icon, title, isActive }: NavItemProps) => {
+export function Sidebar() {
+  const { pathname } = useLocation();
+
   return (
-    <Link
-      to={href}
-      className={cn(
-        "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all",
-        isActive 
-          ? "bg-primary/10 text-primary font-medium" 
-          : "text-foreground/70 hover:bg-primary/5 hover:text-foreground"
-      )}
-    >
-      <Icon className="h-5 w-5" />
-      <span>{title}</span>
-    </Link>
-  );
-};
-
-const Sidebar = () => {
-  const location = useLocation();
-
-  const navItems = [
-    { href: '/', icon: LayoutDashboard, title: 'Dashboard' },
-    { href: '/issues', icon: AlertCircle, title: 'Issues' },
-    { href: '/properties', icon: Home, title: 'Properties' },
-    { href: '/handymen', icon: Users, title: 'Handymen' },
-    { href: '/analytics', icon: BarChart3, title: 'Analytics' },
-    { href: '/settings', icon: Settings, title: 'Settings' },
-  ];
-
-  return (
-    <aside className="fixed left-0 top-0 z-20 flex h-screen w-64 flex-col border-r bg-background">
-      <div className="flex h-16 items-center border-b px-6">
+    <div className="group flex flex-col h-full bg-background border-r">
+      <div className="flex h-14 items-center border-b px-4">
         <Link to="/" className="flex items-center gap-2 font-semibold">
-          <span className="text-xl font-bold">AI Maintenance</span>
+          <span className="bg-primary text-primary-foreground p-1 rounded text-xs">PM</span>
+          <span className="font-semibold">PropManage</span>
         </Link>
       </div>
-      
-      <div className="flex-1 overflow-auto py-6">
-        <nav className="space-y-1 px-3">
-          {navItems.map((item) => (
-            <NavItem
-              key={item.href}
-              href={item.href}
-              icon={item.icon}
-              title={item.title}
-              isActive={location.pathname === item.href}
-            />
+      <ScrollArea className="flex-1 py-2">
+        <nav className="grid gap-1 px-2">
+          {mainNavItems.map((item, index) => (
+            <Link 
+              key={index} 
+              to={item.href}
+              className={cn(
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                pathname === item.href && "bg-accent text-accent-foreground"
+              )}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.title}
+            </Link>
           ))}
         </nav>
-      </div>
-      
-      <div className="border-t p-3">
-        <div className="px-3 py-2">
-          <div className="text-xs text-muted-foreground">
-            <p>Assistant</p>
-          </div>
-        </div>
-      </div>
-    </aside>
+      </ScrollArea>
+    </div>
   );
-};
-
-export default Sidebar;
+}

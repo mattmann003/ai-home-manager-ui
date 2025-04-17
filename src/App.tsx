@@ -1,47 +1,34 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
-import Issues from "./pages/Issues";
-import IssueDetail from "./pages/IssueDetail";
-import Properties from "./pages/Properties";
-import PropertyDetail from "./pages/PropertyDetail";
-import Handymen from "./pages/Handymen";
-import HandymanDetail from "./pages/HandymanDetail";
-import HandymanManagementPage from "./pages/HandymanManagement";
-import Analytics from "./pages/Analytics";
-import Settings from "./pages/Settings";
-import KnowledgeBase from "./pages/KnowledgeBase";
-import NotFound from "./pages/NotFound";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from '@/components/ui/sonner';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import Dashboard from '@/pages/Dashboard';
+import Properties from '@/pages/Properties';
+import Issues from '@/pages/Issues';
+import Handymen from '@/pages/Handymen';
+import Settings from '@/pages/Settings';
+import Analytics from '@/pages/Analytics';
+import Communications from '@/pages/Communications';
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Router>
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/issues" element={<Issues />} />
-          <Route path="/issues/:id" element={<IssueDetail />} />
           <Route path="/properties" element={<Properties />} />
-          <Route path="/properties/:id" element={<PropertyDetail />} />
+          <Route path="/issues" element={<Issues />} />
           <Route path="/handymen" element={<Handymen />} />
-          <Route path="/handymen/:id" element={<HandymanDetail />} />
-          <Route path="/handymen/manage/:id" element={<HandymanManagementPage />} />
-          <Route path="/knowledge-base" element={<KnowledgeBase />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="/communications" element={<Communications />} />
         </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+      </Router>
+      <Toaster position="top-right" />
+    </QueryClientProvider>
+  );
+}
 
 export default App;
