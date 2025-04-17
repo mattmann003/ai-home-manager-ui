@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Phone, MessagesSquare, Settings, Beaker } from 'lucide-react';
 import WhatsAppSetup from './WhatsAppSetup';
+import SMSSetup from './SMSSetup';
 import VoiceCallPanel from './VoiceCallPanel';
 import CommunicationTester from './CommunicationTester';
 import BasicSettingsForm from './forms/BasicSettingsForm';
@@ -95,8 +96,9 @@ const CommunicationsDashboard = () => {
         </TabsList>
         
         <TabsContent value="tools" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <WhatsAppSetup />
+            <SMSSetup />
             <VoiceCallPanel />
           </div>
         </TabsContent>

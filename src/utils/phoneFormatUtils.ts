@@ -87,3 +87,38 @@ export const extractCountryCode = (phoneStr: string | null | undefined): string 
   
   return null;
 };
+
+/**
+ * Formats a phone number for SMS messages
+ * This is similar to E.164 but ensures it's in the format needed for Twilio SMS
+ * @param phoneStr The phone number string
+ * @returns Formatted phone number or null if invalid
+ */
+export const formatPhoneForSMS = (phoneStr: string | null | undefined): string | null => {
+  // SMS uses the same E.164 format as WhatsApp for Twilio
+  return formatPhoneE164(phoneStr);
+};
+
+/**
+ * Detects if a phone number is likely a mobile number
+ * Note: This is a basic heuristic and not 100% accurate
+ * For production, consider using a phone number validation service
+ */
+export const isLikelyMobileNumber = (phoneStr: string | null | undefined): boolean => {
+  if (!phoneStr) return false;
+  
+  // This is a simplified check - in reality, mobile detection 
+  // requires carrier database lookups
+  const cleaned = phoneStr.replace(/\D/g, '');
+  
+  // US-specific check - certain area codes are traditionally mobile
+  // This is not comprehensive and will need to be expanded for international numbers
+  if (cleaned.length === 10) {
+    const areaCode = cleaned.substring(0, 3);
+    // Some US area codes that are predominantly mobile
+    const mobilePrefixes = ['321', '456', '704', '908', '917', '919', '929', '973'];
+    return mobilePrefixes.includes(areaCode);
+  }
+  
+  return true; // Default to assuming it's mobile if we can't determine
+};
