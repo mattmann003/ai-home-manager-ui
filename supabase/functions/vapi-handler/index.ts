@@ -24,6 +24,10 @@ interface VapiCallResponse {
 // Initiate a call using the Vapi API
 async function initiateCall(body: VapiCallRequest): Promise<VapiCallResponse> {
   try {
+    // Debug logging to check if keys are properly configured
+    console.log("Vapi API Key configured:", !!VAPI_API_KEY);
+    console.log("Vapi Assistant ID configured:", !!VAPI_ASSISTANT_ID);
+    
     if (!VAPI_API_KEY) {
       return { success: false, message: "Vapi API key is not configured" };
     }
@@ -104,6 +108,8 @@ async function initiateCall(body: VapiCallRequest): Promise<VapiCallResponse> {
       callOptions.metadata.guest_name = guestName;
     }
     
+    console.log("Making Vapi API call with options:", JSON.stringify(callOptions));
+    
     // Call the Vapi API to initiate a call
     const response = await fetch("https://api.vapi.ai/call", {
       method: "POST",
@@ -121,6 +127,7 @@ async function initiateCall(body: VapiCallRequest): Promise<VapiCallResponse> {
     }
     
     const data = await response.json();
+    console.log("Vapi API response:", JSON.stringify(data));
     
     // Record the call in the ai_calls table if there's an issue ID
     if (issueId) {
@@ -206,7 +213,7 @@ async function handleWebhook(request: Request): Promise<Response> {
             headers: {
               'Content-Type': 'application/json',
               'apikey': Deno.env.get('SUPABASE_ANON_KEY') || '',
-              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY') || ''}`,
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY') || ''}',
             },
             body: JSON.stringify({
               issue_id: issueId,
@@ -229,7 +236,7 @@ async function handleWebhook(request: Request): Promise<Response> {
             headers: {
               'Content-Type': 'application/json',
               'apikey': Deno.env.get('SUPABASE_ANON_KEY') || '',
-              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY') || ''}`,
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY') || ''}',
             },
             body: JSON.stringify({
               issue_id: issueId,
@@ -270,6 +277,8 @@ serve(async (req) => {
   if (req.method === 'POST') {
     try {
       const body = await req.json();
+      console.log("Incoming request body:", JSON.stringify(body));
+      
       const result = await initiateCall(body);
       
       return new Response(JSON.stringify(result), {

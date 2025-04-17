@@ -47,8 +47,8 @@ const IssueCallButton = ({ issueId, guestPhone, guestName }: IssueCallButtonProp
         throw new Error(error.message);
       }
       
-      if (!data.success) {
-        throw new Error(data.message);
+      if (!data || !data.success) {
+        throw new Error(data?.message || "Failed to initiate call, check Edge Function logs");
       }
       
       toast.success("Call initiated successfully");

@@ -118,45 +118,41 @@ const VoiceCallPanel = () => {
           </div>
         )}
         
-        {isAgentConfigured && (
-          <div className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="phone-number">Recipient Phone Number</Label>
-              <Input 
-                id="phone-number" 
-                placeholder="+1234567890"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                disabled={isCalling}
-              />
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Enter a phone number to initiate an outbound call from the AI assistant.
-            </p>
+        <div className="space-y-4">
+          <div className="grid gap-2">
+            <Label htmlFor="phone-number">Recipient Phone Number</Label>
+            <Input 
+              id="phone-number" 
+              placeholder="+1234567890"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              disabled={isCalling}
+            />
           </div>
-        )}
+          <p className="text-sm text-muted-foreground">
+            Enter a phone number to initiate an outbound call from the AI assistant.
+          </p>
+        </div>
       </CardContent>
-      {isAgentConfigured && (
-        <CardFooter>
-          <Button 
-            onClick={handleInitiateCall} 
-            disabled={isCalling || !phoneNumber}
-            className="w-full gap-2"
-          >
-            {isCalling ? (
-              <>
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                <span>Calling...</span>
-              </>
-            ) : (
-              <>
-                <Phone className="h-4 w-4" />
-                <span>Make Call</span>
-              </>
-            )}
-          </Button>
-        </CardFooter>
-      )}
+      <CardFooter>
+        <Button 
+          onClick={handleInitiateCall} 
+          disabled={isCalling || !phoneNumber}
+          className="w-full gap-2"
+        >
+          {isCalling ? (
+            <>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+              <span>Calling...</span>
+            </>
+          ) : (
+            <>
+              <Phone className="h-4 w-4" />
+              <span>Make Call</span>
+            </>
+          )}
+        </Button>
+      </CardFooter>
     </Card>
   );
 };
