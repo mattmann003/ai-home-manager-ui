@@ -213,7 +213,7 @@ async function handleWebhook(request: Request): Promise<Response> {
             headers: {
               'Content-Type': 'application/json',
               'apikey': Deno.env.get('SUPABASE_ANON_KEY') || '',
-              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY') || ''}',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY') || ''}`,
             },
             body: JSON.stringify({
               issue_id: issueId,
