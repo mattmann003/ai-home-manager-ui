@@ -1,4 +1,3 @@
-
 import { supabase } from "./client";
 import { toast } from "@/components/ui/sonner";
 
@@ -175,10 +174,12 @@ export interface HandymanTimeOff {
 }
 
 export const fetchHandymanLocations = async (handymanId?: string) => {
-  let query = supabase.from('handyman_locations');
+  // Use supabase client with type assertion to avoid type errors
+  const query = supabase.from('handyman_locations' as any);
   
-  // Type assertion to bypass TypeScript's type checking since this table isn't in the types
-  let selection = (query as any).select('*').order('priority', { ascending: true });
+  let selection = query
+    .select('*')
+    .order('priority', { ascending: true });
 
   if (handymanId) {
     selection = selection.eq('handyman_id', handymanId);
@@ -196,8 +197,8 @@ export const fetchHandymanLocations = async (handymanId?: string) => {
 };
 
 export const fetchHandymanAvailability = async (handymanId: string) => {
-  // Type assertion to bypass TypeScript's type checking
-  const query = supabase.from('handyman_availability') as any;
+  // Use supabase client with type assertion to avoid type errors
+  const query = supabase.from('handyman_availability' as any);
   
   const { data, error } = await query
     .select('*')
@@ -214,8 +215,8 @@ export const fetchHandymanAvailability = async (handymanId: string) => {
 };
 
 export const fetchHandymanTimeOff = async (handymanId: string) => {
-  // Type assertion to bypass TypeScript's type checking
-  const query = supabase.from('handyman_time_off') as any;
+  // Use supabase client with type assertion to avoid type errors
+  const query = supabase.from('handyman_time_off' as any);
   
   const { data, error } = await query
     .select('*')
@@ -269,5 +270,214 @@ export const getStatusColorClass = (status: string) => {
       return 'bg-green-100 text-green-800 hover:bg-green-200';
     default:
       return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+  }
+};
+
+// New utility functions for integration with Vapi and Twilio
+
+export const initiateVapiCall = async (phoneNumber: string, issueId?: string, guestName?: string) => {
+  try {
+    const { data, error } = await supabase.functions.invoke('vapi-handler', {
+      body: {
+        phoneNumber,
+        issueId,
+        guestName,
+      },
+      method: 'POST',
+    });
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    
+    if (!data.success) {
+      throw new Error(data.message);
+    }
+    
+    return { success: true, callId: data.callId };
+  } catch (error) {
+    console.error("Error initiating Vapi call:", error);
+    toast.error(`Failed to initiate call: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+};
+
+export const sendWhatsAppMessage = async (to: string, message: string, issueId?: string) => {
+  try {
+    const { data, error } = await supabase.functions.invoke('twilio-handler', {
+      body: {
+        purpose: 'send_message',
+        to,
+        message,
+        issueId,
+      },
+      method: 'POST',
+    });
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    
+    if (!data.success) {
+      throw new Error(data.message);
+    }
+    
+    return { success: true, messageId: data.messageId };
+  } catch (error) {
+    console.error("Error sending WhatsApp message:", error);
+    toast.error(`Failed to send message: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+};
+
+export const dispatchHandyman = async (issueId: string, handymanId: string, customMessage?: string, guestPhone?: string) => {
+  try {
+    const { data, error } = await supabase.functions.invoke('twilio-handler', {
+      body: {
+        purpose: 'dispatch',
+        issueId,
+        handymanId,
+        message: customMessage,
+        guestPhone
+      },
+      method: 'POST',
+    });
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    
+    if (!data.success) {
+      throw new Error(data.message);
+    }
+    
+    return { success: true, message: data.message };
+  } catch (error) {
+    console.error("Error dispatching handyman:", error);
+    toast.error(`Failed to dispatch handyman: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+};
+
+// Functions for handyman service area management
+export const addHandymanLocation = async (locationData: Omit<HandymanLocation, 'id'>) => {
+  try {
+    const { data, error } = await (supabase.from('handyman_locations' as any))
+      .insert(locationData)
+      .select('*')
+      .single();
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    
+    return { success: true, location: data as HandymanLocation };
+  } catch (error) {
+    console.error("Error adding handyman location:", error);
+    toast.error(`Failed to add location: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+};
+
+export const updateHandymanLocation = async (locationId: string, locationData: Partial<HandymanLocation>) => {
+  try {
+    const { error } = await (supabase.from('handyman_locations' as any))
+      .update(locationData)
+      .eq('id', locationId);
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating handyman location:", error);
+    toast.error(`Failed to update location: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+};
+
+export const deleteHandymanLocation = async (locationId: string) => {
+  try {
+    const { error } = await (supabase.from('handyman_locations' as any))
+      .delete()
+      .eq('id', locationId);
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting handyman location:", error);
+    toast.error(`Failed to delete location: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+};
+
+// Functions for handyman availability management
+export const saveHandymanAvailability = async (handymanId: string, availabilityData: Omit<HandymanAvailability, 'id'>[]) => {
+  try {
+    // First delete existing availability for the handyman
+    const { error: deleteError } = await (supabase.from('handyman_availability' as any))
+      .delete()
+      .eq('handyman_id', handymanId);
+    
+    if (deleteError) {
+      throw new Error(deleteError.message);
+    }
+    
+    // Then insert the new availability data
+    if (availabilityData.length > 0) {
+      const { error: insertError } = await (supabase.from('handyman_availability' as any))
+        .insert(availabilityData);
+      
+      if (insertError) {
+        throw new Error(insertError.message);
+      }
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving handyman availability:", error);
+    toast.error(`Failed to save availability: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+};
+
+export const requestTimeOff = async (timeOffData: Omit<HandymanTimeOff, 'id'>) => {
+  try {
+    const { data, error } = await (supabase.from('handyman_time_off' as any))
+      .insert(timeOffData)
+      .select('*')
+      .single();
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    
+    return { success: true, timeOff: data as HandymanTimeOff };
+  } catch (error) {
+    console.error("Error requesting time off:", error);
+    toast.error(`Failed to request time off: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+};
+
+export const updateTimeOffStatus = async (timeOffId: string, status: 'approved' | 'denied') => {
+  try {
+    const { error } = await (supabase.from('handyman_time_off' as any))
+      .update({ status })
+      .eq('id', timeOffId);
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating time off status:", error);
+    toast.error(`Failed to update time off status: ${error.message}`);
+    return { success: false, error: error.message };
   }
 };
