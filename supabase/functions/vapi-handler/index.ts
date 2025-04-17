@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const VAPI_API_KEY = Deno.env.get('VAPI_API_KEY');
@@ -24,15 +23,18 @@ interface VapiCallResponse {
 // Initiate a call using the Vapi API
 async function initiateCall(body: VapiCallRequest): Promise<VapiCallResponse> {
   try {
-    // Debug logging to check if keys are properly configured
+    // Enhanced debugging logging
     console.log("Vapi API Key configured:", !!VAPI_API_KEY);
     console.log("Vapi Assistant ID configured:", !!VAPI_ASSISTANT_ID);
     
+    // Validate API keys are present
     if (!VAPI_API_KEY) {
+      console.error("CRITICAL: Vapi API key is missing");
       return { success: false, message: "Vapi API key is not configured" };
     }
     
     if (!VAPI_ASSISTANT_ID) {
+      console.error("CRITICAL: Vapi Assistant ID is missing");
       return { success: false, message: "Vapi Assistant ID is not configured" };
     }
     
@@ -155,10 +157,10 @@ async function initiateCall(body: VapiCallRequest): Promise<VapiCallResponse> {
       callId: data.call_id 
     };
   } catch (error) {
-    console.error("Error initiating call:", error);
+    console.error("Comprehensive error in initiateCall:", error);
     return { 
       success: false, 
-      message: `Error initiating call: ${error.message}` 
+      message: `Detailed error initiating call: ${error.message}` 
     };
   }
 }
