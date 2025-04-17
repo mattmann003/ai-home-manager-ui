@@ -139,7 +139,8 @@ export const fetchDispatchAssignments = async (issueId?: string) => {
     return [];
   }
 
-  return data as DispatchAssignment[] || [];
+  // Use explicit cast to unknown first to satisfy TypeScript
+  return (data || []) as unknown as DispatchAssignment[] || [];
 };
 
 // Define interface for handyman location coverage
