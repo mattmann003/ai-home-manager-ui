@@ -33,7 +33,7 @@ const VapiAgentConfig = () => {
   const [isActive, setIsActive] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
 
-  // Initialize form with default values
+  // Initialize form with default values from system config
   const form = useForm<AgentFormValues>({
     resolver: zodResolver(agentFormSchema),
     defaultValues: {
@@ -48,11 +48,30 @@ const VapiAgentConfig = () => {
 
   const onSubmit = async (data: AgentFormValues) => {
     try {
-      // Here we would save the configuration to Supabase
-      console.log("Saving configuration:", data);
-      
-      // Simulate saving to Supabase
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Save configuration to system_config table
+      const configUpdates = [
+        { name: 'vapi_agent_name', value: data.agentName },
+        { name: 'vapi_welcome_message', value: data.welcomeMessage },
+        { name: 'vapi_voice', value: data.voice },
+        { name: 'vapi_language', value: data.language },
+        { name: 'vapi_max_call_duration', value: data.maxCallDuration.toString() },
+        { name: 'vapi_fallback_phone', value: data.fallbackPhone },
+      ];
+
+      // Batch update system configuration
+      for (const config of configUpdates) {
+        const { error } = await supabase
+          .from('system_config')
+          .upsert({ 
+            name: config.name, 
+            value: config.value 
+          })
+          .select();
+
+        if (error) {
+          throw error;
+        }
+      }
       
       setIsActive(true);
       toast.success("Agent configuration saved successfully");
@@ -62,14 +81,35 @@ const VapiAgentConfig = () => {
     }
   };
 
-  const handleTestAgent = () => {
+  const handleTestAgent = async () => {
     setIsTesting(true);
     
-    // Simulate a test call
-    setTimeout(() => {
-      setIsTesting(false);
+    try {
+      // Simulate a test call by invoking the Vapi handler
+      const { data, error } = await supabase.functions.invoke('vapi-handler', {
+        body: {
+          phoneNumber: form.getValues('fallbackPhone'),
+          issueId: null,
+          guestName: 'Test Call'
+        },
+        method: 'POST',
+      });
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+      
       toast.success("Test call completed successfully");
-    }, 3000);
+    } catch (error) {
+      console.error("Error testing agent:", error);
+      toast.error(`Failed to test agent: ${error.message}`);
+    } finally {
+      setIsTesting(false);
+    }
   };
 
   return (
