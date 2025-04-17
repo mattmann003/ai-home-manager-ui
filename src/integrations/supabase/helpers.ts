@@ -1,4 +1,3 @@
-
 import { supabase } from "./client";
 import { toast } from "@/components/ui/sonner";
 
@@ -118,7 +117,7 @@ export interface DispatchAssignment {
 
 export const fetchDispatchAssignments = async (issueId?: string) => {
   // Use any to bypass TypeScript strictness since the table isn't in our types yet
-  const query = supabase.from('dispatch_assignments') as any;
+  let query = supabase.from('dispatch_assignments' as any);
   
   let selection = query
     .select(`
@@ -194,7 +193,8 @@ export const fetchHandymanLocations = async (handymanId?: string) => {
     return [];
   }
 
-  return (data || []) as HandymanLocation[];
+  // Use explicit cast to unknown first to satisfy TypeScript
+  return (data || []) as unknown as HandymanLocation[];
 };
 
 export const fetchHandymanAvailability = async (handymanId: string) => {
@@ -212,7 +212,8 @@ export const fetchHandymanAvailability = async (handymanId: string) => {
     return [];
   }
 
-  return (data || []) as HandymanAvailability[];
+  // Use explicit cast to unknown first to satisfy TypeScript
+  return (data || []) as unknown as HandymanAvailability[];
 };
 
 export const fetchHandymanTimeOff = async (handymanId: string) => {
@@ -230,7 +231,8 @@ export const fetchHandymanTimeOff = async (handymanId: string) => {
     return [];
   }
 
-  return (data || []) as HandymanTimeOff[];
+  // Use explicit cast to unknown first to satisfy TypeScript
+  return (data || []) as unknown as HandymanTimeOff[];
 };
 
 export const formatDateTime = (dateString: string) => {
@@ -372,6 +374,7 @@ export const addHandymanLocation = async (locationData: Omit<HandymanLocation, '
       throw new Error(error.message);
     }
     
+    // Use explicit cast to unknown first to satisfy TypeScript
     return { success: true, location: data as unknown as HandymanLocation };
   } catch (error) {
     console.error("Error adding handyman location:", error);
@@ -457,6 +460,7 @@ export const requestTimeOff = async (timeOffData: Omit<HandymanTimeOff, 'id'>) =
       throw new Error(error.message);
     }
     
+    // Use explicit cast to unknown first to satisfy TypeScript
     return { success: true, timeOff: data as unknown as HandymanTimeOff };
   } catch (error) {
     console.error("Error requesting time off:", error);
