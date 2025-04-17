@@ -85,6 +85,10 @@ const VoiceCallPanel = () => {
     }
   };
 
+  const formattedPhone = agentPhone !== 'Not configured' ? 
+    `+${agentPhone.replace(/\D/g, '')}` : 
+    'Not configured';
+
   return (
     <Card className="shadow-sm">
       <CardHeader className="pb-2">
@@ -102,7 +106,7 @@ const VoiceCallPanel = () => {
               </div>
               <div>
                 <div className="text-lg font-medium">{agentName}</div>
-                <div className="text-sm text-muted-foreground">Calling from: {agentPhone}</div>
+                <div className="text-sm text-muted-foreground">Calling from: {formattedPhone}</div>
               </div>
             </div>
             <div className="text-xs px-2 py-1 rounded-full bg-success/10 text-success">

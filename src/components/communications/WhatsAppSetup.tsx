@@ -64,6 +64,19 @@ const WhatsAppSetup = () => {
         throw new Error(data.message);
       }
       
+      // Also update the Vapi phone number to maintain consistency
+      const { error: vapiUpdateError } = await supabase
+        .from('system_config')
+        .upsert({
+          name: 'vapi_twilio_phone',
+          value: phoneNumber,
+          description: 'Twilio phone number for outbound calls'
+        });
+        
+      if (vapiUpdateError) {
+        console.warn("Failed to update Vapi phone number:", vapiUpdateError);
+      }
+      
       toast.success('WhatsApp number configured successfully');
       refetch(); // Refresh the config data
       setPhoneNumber('');

@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const VAPI_API_KEY = Deno.env.get('VAPI_API_KEY');
@@ -87,6 +88,17 @@ async function initiateCall(body: VapiCallRequest): Promise<VapiCallResponse> {
       ? parseInt(durationConfig[0].value) 
       : 15;
     
+    // Get Twilio phone number from system_config for caller ID
+    const { data: twilioPhoneConfig } = await fetch(
+      'https://sjxeupeggseedybibyzx.supabase.co/rest/v1/system_config?name=eq.vapi_twilio_phone',
+      {
+        headers: {
+          'apikey': Deno.env.get('SUPABASE_ANON_KEY') || '',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY') || ''}`,
+        },
+      }
+    ).then(res => res.json());
+    
     // Create the call options
     const callOptions = {
       assistant_id: VAPI_ASSISTANT_ID,
@@ -99,6 +111,11 @@ async function initiateCall(body: VapiCallRequest): Promise<VapiCallResponse> {
       webhook_url: "https://sjxeupeggseedybibyzx.supabase.co/functions/v1/vapi-handler/webhooks",
       metadata: {}
     };
+    
+    // Add Twilio phone as caller ID if available
+    if (twilioPhoneConfig && twilioPhoneConfig.length > 0 && twilioPhoneConfig[0].value) {
+      callOptions.from = twilioPhoneConfig[0].value;
+    }
     
     // Add issue ID to metadata if provided
     if (issueId) {

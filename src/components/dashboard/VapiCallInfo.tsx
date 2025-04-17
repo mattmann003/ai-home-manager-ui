@@ -7,10 +7,33 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const VapiCallInfo = () => {
-  // Replace with your actual Vapi phone number
-  const phoneNumber = "+1 (555) 123-4567";
+  // Fetch the phone number from system_config
+  const { data: phoneConfig, isLoading } = useQuery({
+    queryKey: ['vapi-phone-number'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('system_config')
+        .select('*')
+        .eq('name', 'vapi_twilio_phone')
+        .maybeSingle();
+        
+      if (error) {
+        console.error("Error fetching Vapi phone number:", error);
+        return null;
+      }
+      
+      return data;
+    }
+  });
+  
+  // Format the phone number for display
+  const phoneNumber = phoneConfig?.value 
+    ? `+${phoneConfig.value.replace(/\D/g, '')}` 
+    : "+1 (555) 123-4567"; // Placeholder if not configured
   
   return (
     <Card className="shadow-sm">

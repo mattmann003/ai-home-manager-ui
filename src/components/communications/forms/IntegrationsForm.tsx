@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Save } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 interface IntegrationsFormProps {
   initialValues?: {
@@ -21,13 +22,47 @@ const IntegrationsForm = ({ initialValues }: IntegrationsFormProps) => {
   const [webhookUrl, setWebhookUrl] = useState(initialValues?.webhookUrl || '');
   const [openAiApiKey, setOpenAiApiKey] = useState(initialValues?.openAiApiKey || '');
   const [twilioPhone, setTwilioPhone] = useState(initialValues?.twilioPhone || '');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Fetch the current Twilio phone number from system_config
+  const { data: phoneConfigData, refetch } = useQuery({
+    queryKey: ['twilio-phone-config'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('system_config')
+        .select('*')
+        .in('name', ['vapi_twilio_phone', 'whatsapp_number']);
+      
+      if (error) {
+        toast.error('Failed to load configuration');
+        console.error('Error fetching configuration:', error);
+        return [];
+      }
+      
+      return data || [];
+    }
+  });
+
+  // Extract current phone numbers if available
+  const currentVapiPhone = phoneConfigData?.find(c => c.name === 'vapi_twilio_phone')?.value || '';
+  const currentWhatsappPhone = phoneConfigData?.find(c => c.name === 'whatsapp_number')?.value || '';
+
+  // Initialize with current values if available and not already set
+  useState(() => {
+    if (currentVapiPhone && !twilioPhone) {
+      setTwilioPhone(currentVapiPhone);
+    }
+  });
 
   const handleSaveIntegrations = async () => {
     try {
+      setIsSaving(true);
+      
       // Save integration settings to system_config table
       const integrationUpdates = [
         { name: 'vapi_webhook_url', value: webhookUrl },
         { name: 'vapi_twilio_phone', value: twilioPhone },
+        { name: 'whatsapp_number', value: twilioPhone } // Use the same number for WhatsApp
       ];
 
       // Save sensitive information as secrets (in a real app)
@@ -46,10 +81,13 @@ const IntegrationsForm = ({ initialValues }: IntegrationsFormProps) => {
         }
       }
       
+      await refetch(); // Refresh the data
       toast.success("Integration settings saved successfully");
     } catch (error) {
       console.error("Error saving integration settings:", error);
       toast.error("Failed to save integration settings");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -106,14 +144,33 @@ const IntegrationsForm = ({ initialValues }: IntegrationsFormProps) => {
             onChange={(e) => setTwilioPhone(e.target.value)}
           />
           <p className="text-xs text-muted-foreground">
-            The outbound caller ID for your voice assistant
+            The phone number used for voice calls and WhatsApp messaging
           </p>
+          {currentVapiPhone && currentWhatsappPhone && currentVapiPhone !== currentWhatsappPhone && (
+            <p className="text-xs text-amber-500">
+              Note: You currently have different numbers configured for voice ({currentVapiPhone}) and WhatsApp ({currentWhatsappPhone}). 
+              Saving will use the same number for both services.
+            </p>
+          )}
         </div>
       </div>
       
-      <Button className="gap-2" onClick={handleSaveIntegrations}>
-        <Save className="h-4 w-4" />
-        Save Integration Settings
+      <Button 
+        className="gap-2" 
+        onClick={handleSaveIntegrations}
+        disabled={isSaving}
+      >
+        {isSaving ? (
+          <>
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+            <span>Saving...</span>
+          </>
+        ) : (
+          <>
+            <Save className="h-4 w-4" />
+            <span>Save Integration Settings</span>
+          </>
+        )}
       </Button>
     </div>
   );
